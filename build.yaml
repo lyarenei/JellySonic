@@ -1,16 +1,16 @@
 ---
-name: "Template"
+name: "JellySonic"
 guid: "076A536C-50C8-47B0-BE4C-8C8DA06C7372"
 version: "1.0.0.0"
-targetAbi: "10.7.0.0"
-framework: "net5.0"
+targetAbi: "10.8.0.0"
+framework: "net6.0"
 overview: "Short description about your plugin"
 description: >
   This is a longer description that can span more than one
   line and include details about your plugin.
-category: "General"
-owner: "jellyfin"
+category: "Music"
+owner: "lyarenei"
 artifacts:
-- "Jellyfin.Plugin.Template.dll"
+  - "Jellysonic.dll"
 changelog: >
   changelog
