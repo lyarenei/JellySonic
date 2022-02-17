@@ -68,6 +68,7 @@ public class PluginController : ControllerBase
     [Produces("application/xml")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("rest/ping")]
+    [Route("rest/ping.view")]
     public ActionResult Ping()
     {
         return ToObjectResult(new BaseResponse());
