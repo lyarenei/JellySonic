@@ -6,7 +6,7 @@ namespace JellySonic.Models;
 /// Base Subsonic response.
 /// </summary>
 [XmlRoot(ElementName = "subsonic-response", Namespace = "http://subsonic.org/restapi")]
-public class BaseResponse
+public class Response
 {
     /// <summary>
     /// Reported version of the Subsonic server.
@@ -14,9 +14,9 @@ public class BaseResponse
     private const string ServerVer = "1.12.0";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BaseResponse"/> class.
+    /// Initializes a new instance of the <see cref="Response"/> class.
     /// </summary>
-    public BaseResponse()
+    public Response()
     {
         Data = new object();
         Status = "ok";
@@ -24,11 +24,11 @@ public class BaseResponse
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BaseResponse"/> class.
+    /// Initializes a new instance of the <see cref="Response"/> class.
     /// </summary>
     /// <param name="data">Response data.</param>
     /// <param name="status">A response status.</param>
-    public BaseResponse(object data, string status = "ok")
+    public Response(object data, string status = "ok")
     {
         Data = data;
         Status = status;
