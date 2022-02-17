@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace JellySonic;
+namespace JellySonic.Controllers;
 
 /// <summary>
 /// The controller for JellySonic API.
