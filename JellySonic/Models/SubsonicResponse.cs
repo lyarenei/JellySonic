@@ -31,11 +31,9 @@ public class SubsonicResponse
     /// <summary>
     /// Initializes a new instance of the <see cref="SubsonicResponse"/> class.
     /// </summary>
-    /// <param name="responseData">Response data.</param>
     /// <param name="status">A response status.</param>
-    public SubsonicResponse(ResponseData responseData, string status = "ok")
+    public SubsonicResponse(string status = "ok")
     {
-        ResponseData = responseData;
         Status = status;
         Version = ServerVer;
     }
@@ -43,8 +41,18 @@ public class SubsonicResponse
     /// <summary>
     /// Gets or sets response data.
     /// </summary>
-    [XmlElement]
+    [XmlIgnore]
     public ResponseData? ResponseData { get; set; }
+
+    /// <summary>
+    /// Gets or sets response data for serialization.
+    /// </summary>
+    [XmlElement("error", typeof(Error))]
+    public object? ResponseDataSerialization
+    {
+        get { return ResponseData; }
+        set { ResponseData = (ResponseData)value!; }
+    }
 
     /// <summary>
     /// Gets or sets a response status.
