@@ -5,8 +5,8 @@ namespace JellySonic.Models;
 /// <summary>
 /// Base Subsonic response.
 /// </summary>
-[XmlRoot(ElementName = "subsonic-response", Namespace = "http://subsonic.org/restapi")]
-public class Response
+[XmlRoot(ElementName = "subsonic-response")]
+public class SubsonicResponse
 {
     /// <summary>
     /// Reported version of the Subsonic server.
@@ -14,23 +14,28 @@ public class Response
     private const string ServerVer = "1.12.0";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Response"/> class.
+    /// Gets namespace.
     /// </summary>
-    public Response()
+    public const string Namespace = "http://subsonic.org/restapi";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SubsonicResponse"/> class.
+    /// </summary>
+    public SubsonicResponse()
     {
-        Data = new object();
+        ResponseData = null;
         Status = "ok";
         Version = ServerVer;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Response"/> class.
+    /// Initializes a new instance of the <see cref="SubsonicResponse"/> class.
     /// </summary>
-    /// <param name="data">Response data.</param>
+    /// <param name="responseData">Response data.</param>
     /// <param name="status">A response status.</param>
-    public Response(object data, string status = "ok")
+    public SubsonicResponse(ResponseData responseData, string status = "ok")
     {
-        Data = data;
+        ResponseData = responseData;
         Status = status;
         Version = ServerVer;
     }
@@ -39,8 +44,7 @@ public class Response
     /// Gets or sets response data.
     /// </summary>
     [XmlElement]
-    [XmlArrayItem]
-    public object Data { get; set; }
+    public ResponseData? ResponseData { get; set; }
 
     /// <summary>
     /// Gets or sets a response status.

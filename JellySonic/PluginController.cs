@@ -1,8 +1,13 @@
+using System.IO;
+using System.Text;
+using System.Xml;
 using JellySonic.Formatters;
 using JellySonic.Models;
+using JellySonic.Services;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -78,6 +83,22 @@ public class PluginController : ControllerBase
         return objectResult;
     }
 
+    // Taken from https://github.com/jellyfin/jellyfin-plugin-opds/blob/b78a8bcc979581fe92835235a2c0d59516b5df15/Jellyfin.Plugin.Opds/OpdsApi.cs#L294
+    private FileStreamResult BuildOutput(SubsonicResponse subsonicResponse)
+    {
+        var memoryStream = new MemoryStream();
+        var serializer = XmlHelper.Create(typeof(SubsonicResponse), SubsonicResponse.Namespace);
+        using (var writer = new StreamWriter(memoryStream, Encoding.UTF8, IODefaults.StreamWriterBufferSize, true))
+        using (var textWriter = new XmlTextWriter(writer))
+        {
+            textWriter.Formatting = Formatting.Indented;
+            serializer.Serialize(textWriter, subsonicResponse);
+        }
+
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        return File(memoryStream, "application/xml; charset=utf-8");
+    }
+
     /// <summary>
     /// A simple HTTP Get endpoint. Some clients use it to check availability of the server instead of ping.
     /// </summary>
@@ -95,12 +116,11 @@ public class PluginController : ControllerBase
     /// <returns>Generic Subsonic response.</returns>
     [HttpGet]
     [HttpPost]
-    [Produces("application/xml")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("rest/ping")]
     [Route("rest/ping.view")]
     public ActionResult Ping()
     {
-        return ToObjectResult(new BaseResponse());
+        return BuildOutput(new SubsonicResponse());
     }
 }
