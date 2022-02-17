@@ -126,4 +126,28 @@ public class PluginController : ControllerBase
     {
         return BuildOutput(new SubsonicResponse());
     }
+
+    /// <summary>
+    /// Get details about the Subsonic software license.
+    /// </summary>
+    /// <returns>A <see cref="License"/>.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("rest/getLicense")]
+    [Route("rest/getLicense.view")]
+    public ActionResult GetLicense()
+    {
+        SubsonicResponse resp;
+        if (AuthenticateUser())
+        {
+            resp = new SubsonicResponse { ResponseData = new License() };
+        }
+        else
+        {
+            var err = new Error("invalid credentials", ErrorCodes.InvalidCredentials);
+            resp = new SubsonicResponse("failed") { ResponseData = err };
+        }
+
+        return BuildOutput(resp);
+    }
 }
