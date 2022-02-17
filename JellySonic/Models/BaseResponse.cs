@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace JellySonic.Subsonic;
+namespace JellySonic.Models;
 
 /// <summary>
 /// Base Subsonic response.
@@ -18,29 +18,39 @@ public class BaseResponse
     /// </summary>
     public BaseResponse()
     {
-        this.Status = "ok";
-        this.Version = ServerVer;
+        Data = new object();
+        Status = "ok";
+        Version = ServerVer;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseResponse"/> class.
     /// </summary>
+    /// <param name="data">Response data.</param>
     /// <param name="status">A response status.</param>
-    public BaseResponse(string status = "ok")
+    public BaseResponse(object data, string status = "ok")
     {
-        this.Status = status;
-        this.Version = ServerVer;
+        Data = data;
+        Status = status;
+        Version = ServerVer;
     }
 
     /// <summary>
-    /// Gets or sets the Subsonic REST API version.
+    /// Gets or sets response data.
     /// </summary>
-    [XmlAttribute("version")]
-    public string Version { get; set; }
+    [XmlElement]
+    [XmlArrayItem]
+    public object Data { get; set; }
 
     /// <summary>
     /// Gets or sets a response status.
     /// </summary>
     [XmlAttribute("status")]
     public string Status { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Subsonic REST API version.
+    /// </summary>
+    [XmlAttribute("version")]
+    public string Version { get; set; }
 }

@@ -1,5 +1,5 @@
 using JellySonic.Formatters;
-using JellySonic.Subsonic;
+using JellySonic.Models;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
