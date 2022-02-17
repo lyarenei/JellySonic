@@ -19,24 +19,24 @@ namespace JellySonic;
 /// The controller for JellySonic API.
 /// </summary>
 [ApiController]
-[Route("subsonic")]
-public class PluginController : ControllerBase
+[Route("subsonic/rest")]
+public class SubsonicApiController : ControllerBase
 {
-    private readonly ILogger<PluginController> _logger;
+    private readonly ILogger<SubsonicApiController> _logger;
     private readonly IUserManager _userManager;
     private readonly IXmlSerializer _xmlSerializer;
     private readonly ILibraryManager _libraryManager;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PluginController"/> class.
+    /// Initializes a new instance of the <see cref="SubsonicApiController"/> class.
     /// </summary>
     /// <param name="loggerFactory"> Logger factory.</param>
     /// <param name="userManager">User manager instance.</param>
     /// <param name="xmlSerializer">XML serializer instance.</param>
     /// <param name="libraryManager">Library manager instance.</param>
-    public PluginController(ILoggerFactory loggerFactory, IUserManager userManager, IXmlSerializer xmlSerializer, ILibraryManager libraryManager)
+    public SubsonicApiController(ILoggerFactory loggerFactory, IUserManager userManager, IXmlSerializer xmlSerializer, ILibraryManager libraryManager)
     {
-        _logger = loggerFactory.CreateLogger<PluginController>();
+        _logger = loggerFactory.CreateLogger<SubsonicApiController>();
         _userManager = userManager;
         _xmlSerializer = xmlSerializer;
         _libraryManager = libraryManager;
@@ -90,12 +90,12 @@ public class PluginController : ControllerBase
     /// <summary>
     /// Used to test connectivity with the server.
     /// </summary>
-    /// <returns>Generic Subsonic response.</returns>
+    /// <returns>Empty Subsonic response.</returns>
     [HttpGet]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("rest/ping")]
-    [Route("rest/ping.view")]
+    [Route("ping")]
+    [Route("ping.view")]
     public ActionResult Ping()
     {
         return BuildOutput(new SubsonicResponse());
@@ -104,13 +104,14 @@ public class PluginController : ControllerBase
     /// <summary>
     /// Get details about the Subsonic software license.
     /// </summary>
-    /// <returns>A <see cref="License"/>.</returns>
+    /// <returns>A Subsonic <see cref="License"/> response.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("rest/getLicense")]
-    [Route("rest/getLicense.view")]
+    [Route("getLicense")]
+    [Route("getLicense.view")]
     public ActionResult GetLicense()
     {
+
         SubsonicResponse resp;
         if (AuthenticateUser())
         {
