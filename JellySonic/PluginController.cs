@@ -65,6 +65,7 @@ public class PluginController : ControllerBase
     /// </summary>
     /// <returns>Generic Subsonic response.</returns>
     [HttpGet]
+    [HttpPost]
     [Produces("application/xml")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("rest/ping")]
