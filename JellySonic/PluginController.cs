@@ -1,5 +1,7 @@
 using JellySonic.Formatters;
 using JellySonic.Subsonic;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Serialization;
 using Microsoft.AspNetCore.Http;
@@ -33,6 +35,33 @@ public class PluginController : ControllerBase
         _userManager = userManager;
         _xmlSerializer = xmlSerializer;
         _libraryManager = libraryManager;
+    }
+
+    /// <summary>
+    /// Authenticate user in Jellyfin.
+    /// </summary>
+    /// <returns>User authentication is successful.</returns>
+    private bool AuthenticateUser()
+    {
+        var username = Request.Query["u"];
+        var password = Request.Query["p"];
+
+        try
+        {
+            var user = this._userManager.AuthenticateUser(
+                    username,
+                    password,
+                    string.Empty,
+                    HttpContext.GetNormalizedRemoteIp().ToString(),
+                    true)
+                .ConfigureAwait(false);
+
+            return user.GetAwaiter().GetResult() != null;
+        }
+        catch (AuthenticationException)
+        {
+            return false;
+        }
     }
 
     /// <summary>
