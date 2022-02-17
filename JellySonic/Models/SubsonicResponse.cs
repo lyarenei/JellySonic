@@ -48,6 +48,7 @@ public class SubsonicResponse
     /// Gets or sets response data for serialization.
     /// </summary>
     [XmlElement("error", typeof(Error))]
+    [XmlElement("license", typeof(License))]
     public object? ResponseDataSerialization
     {
         get { return ResponseData; }
