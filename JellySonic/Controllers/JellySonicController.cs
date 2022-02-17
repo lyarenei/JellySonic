@@ -31,7 +31,6 @@ public class JellySonicController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult Get()
     {
-        this._logger.LogInformation("called basic get");
         _logger.LogDebug("plain get endpoint was called");
         return Ok();
     }
