@@ -88,17 +88,6 @@ public class PluginController : ControllerBase
     }
 
     /// <summary>
-    /// A simple HTTP Get endpoint. Some clients use it to check availability of the server instead of ping.
-    /// </summary>
-    /// <returns>Empty OK response.</returns>
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult Get()
-    {
-        return Ok();
-    }
-
-    /// <summary>
     /// Used to test connectivity with the server.
     /// </summary>
     /// <returns>Generic Subsonic response.</returns>
