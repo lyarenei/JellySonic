@@ -8,7 +8,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,7 +23,6 @@ public class SubsonicApiController : ControllerBase
 {
     private readonly ILogger<SubsonicApiController> _logger;
     private readonly IUserManager _userManager;
-    private readonly IXmlSerializer _xmlSerializer;
     private readonly ILibraryManager _libraryManager;
 
     /// <summary>
@@ -32,13 +30,11 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <param name="loggerFactory"> Logger factory.</param>
     /// <param name="userManager">User manager instance.</param>
-    /// <param name="xmlSerializer">XML serializer instance.</param>
     /// <param name="libraryManager">Library manager instance.</param>
-    public SubsonicApiController(ILoggerFactory loggerFactory, IUserManager userManager, IXmlSerializer xmlSerializer, ILibraryManager libraryManager)
+    public SubsonicApiController(ILoggerFactory loggerFactory, IUserManager userManager, ILibraryManager libraryManager)
     {
         _logger = loggerFactory.CreateLogger<SubsonicApiController>();
         _userManager = userManager;
-        _xmlSerializer = xmlSerializer;
         _libraryManager = libraryManager;
     }
 
