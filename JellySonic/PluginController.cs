@@ -54,7 +54,7 @@ public class PluginController : ControllerBase
     /// </summary>
     /// <returns>Empty OK response.</returns>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult Get()
     {
         return Ok();
