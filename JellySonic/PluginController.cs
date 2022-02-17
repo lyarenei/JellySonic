@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text;
 using System.Xml;
+using System.Xml.Serialization;
 using JellySonic.Formatters;
 using JellySonic.Models;
 using JellySonic.Services;
@@ -92,7 +93,9 @@ public class PluginController : ControllerBase
         using (var textWriter = new XmlTextWriter(writer))
         {
             textWriter.Formatting = Formatting.Indented;
-            serializer.Serialize(textWriter, subsonicResponse);
+            var emptyNamespaces = new XmlSerializerNamespaces();
+            emptyNamespaces.Add(string.Empty, string.Empty);
+            serializer.Serialize(textWriter, subsonicResponse, emptyNamespaces);
         }
 
         memoryStream.Seek(0, SeekOrigin.Begin);
