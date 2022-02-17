@@ -5,23 +5,23 @@ namespace JellySonic.Models;
 /// <summary>
 /// A Subsonic error response class.
 /// </summary>
-public class Error : ResponseData
+public class SubsonicError : ResponseData
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Error"/> class.
+    /// Initializes a new instance of the <see cref="SubsonicError"/> class.
     /// </summary>
-    public Error()
+    public SubsonicError()
     {
         ErrorCode = string.Empty;
         Message = ErrorCodes.Generic;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Error"/> class.
+    /// Initializes a new instance of the <see cref="SubsonicError"/> class.
     /// </summary>
     /// <param name="message"> Error message.</param>
     /// <param name="errorCode">Error code. See <see cref="ErrorCodes"/> for predefined values.</param>
-    public Error(string message, string errorCode)
+    public SubsonicError(string message, string errorCode)
     {
         ErrorCode = errorCode;
         Message = message;

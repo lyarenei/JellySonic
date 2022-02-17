@@ -5,7 +5,7 @@ namespace JellySonic.Models;
 /// <summary>
 /// Response data interface.
 /// </summary>
-[XmlInclude(typeof(Error))]
+[XmlInclude(typeof(SubsonicError))]
 public abstract class ResponseData
 {
 }

@@ -117,7 +117,7 @@ public class SubsonicApiController : ControllerBase
         }
         else
         {
-            var err = new Error("invalid credentials", ErrorCodes.InvalidCredentials);
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
             resp = new SubsonicResponse("failed") { ResponseData = err };
         }
 
