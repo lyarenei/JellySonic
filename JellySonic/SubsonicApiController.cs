@@ -98,6 +98,7 @@ public class SubsonicApiController : ControllerBase
     [Route("ping.view")]
     public ActionResult Ping()
     {
+        _logger.LogDebug("received ping request");
         return BuildOutput(new SubsonicResponse());
     }
 
@@ -111,6 +112,7 @@ public class SubsonicApiController : ControllerBase
     [Route("getLicense.view")]
     public ActionResult GetLicense()
     {
+        _logger.LogDebug("received getLicense request");
 
         SubsonicResponse resp;
         if (AuthenticateUser())
