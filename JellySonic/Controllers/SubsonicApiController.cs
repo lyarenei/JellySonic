@@ -3,12 +3,15 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using JellySonic.Models;
 using JellySonic.Services;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -82,6 +85,42 @@ public class SubsonicApiController : ControllerBase
 
         memoryStream.Seek(0, SeekOrigin.Begin);
         return File(memoryStream, "application/xml; charset=utf-8");
+    }
+
+    /// <summary>
+    /// Get all artists.
+    /// </summary>
+    /// <returns>Artists Subsonic response.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getArtists")]
+    [Route("getArtists.view")]
+    public ActionResult GetArtists()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new SubsonicError("invalid credentials", ErrorCodes.NotAuthorized);
+            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+        }
+
+        var query = new InternalItemsQuery
+        {
+            // IncludeItemTypes = new[] { BaseItemKind.Person },
+            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+            Recursive = true
+        };
+
+        query.SetUser(user);
+        var queryData = _libraryManager.GetAlbumArtists(query);
+        if (queryData?.Items == null)
+        {
+            var err = new SubsonicError("no artists found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+        }
+
+        var artists = new Artists(queryData.Items);
+        return BuildOutput(new SubsonicResponse() { ResponseData = artists });
     }
 
     /// <summary>
