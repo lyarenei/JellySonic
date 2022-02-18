@@ -93,7 +93,6 @@ public class SubsonicApiController : ControllerBase
 
         var query = new InternalItemsQuery
         {
-            // IncludeItemTypes = new[] { BaseItemKind.Person },
             OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
             Recursive = true
         };
