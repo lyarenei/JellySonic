@@ -1,16 +1,10 @@
-using System.IO;
-using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using JellySonic.Models;
-using JellySonic.Services;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -69,21 +63,14 @@ public class SubsonicApiController : ControllerBase
         }
     }
 
-    // Taken from https://github.com/jellyfin/jellyfin-plugin-opds/blob/b78a8bcc979581fe92835235a2c0d59516b5df15/Jellyfin.Plugin.Opds/OpdsApi.cs#L294
-    private FileStreamResult BuildOutput(SubsonicResponse subsonicResponse)
+    /// <summary>
+    /// Builds output file usable for controller response.
+    /// </summary>
+    /// <param name="subsonicResponse">Data used to build the response.</param>
+    /// <returns>Output file.</returns>
+    public FileStreamResult BuildOutput(SubsonicResponse subsonicResponse)
     {
-        var memoryStream = new MemoryStream();
-        var serializer = XmlHelper.Create(typeof(SubsonicResponse), SubsonicResponse.Namespace);
-        using (var writer = new StreamWriter(memoryStream, Encoding.UTF8, IODefaults.StreamWriterBufferSize, true))
-        using (var textWriter = new XmlTextWriter(writer))
-        {
-            textWriter.Formatting = Formatting.Indented;
-            var emptyNamespaces = new XmlSerializerNamespaces();
-            emptyNamespaces.Add(string.Empty, string.Empty);
-            serializer.Serialize(textWriter, subsonicResponse, emptyNamespaces);
-        }
-
-        memoryStream.Seek(0, SeekOrigin.Begin);
+        var memoryStream = subsonicResponse.ToMemoryStream();
         return File(memoryStream, "application/xml; charset=utf-8");
     }
 

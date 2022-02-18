@@ -1,4 +1,10 @@
+using System.IO;
+using System.Text;
+using System.Xml;
 using System.Xml.Serialization;
+using JellySonic.Services;
+using MediaBrowser.Model.IO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JellySonic.Models;
 
@@ -67,4 +73,26 @@ public class SubsonicResponse
     /// </summary>
     [XmlAttribute("version")]
     public string Version { get; set; }
+
+    /// <summary>
+    /// Converts object to memory stream.
+    /// </summary>
+    /// <returns>Memory stream with object data.</returns>
+    public MemoryStream ToMemoryStream()
+    {
+        // Taken from https://github.com/jellyfin/jellyfin-plugin-opds/blob/b78a8bcc979581fe92835235a2c0d59516b5df15/Jellyfin.Plugin.Opds/OpdsApi.cs#L294
+        var memoryStream = new MemoryStream();
+        var serializer = XmlHelper.Create(typeof(SubsonicResponse), Namespace);
+        using (var writer = new StreamWriter(memoryStream, Encoding.UTF8, IODefaults.StreamWriterBufferSize, true))
+        using (var textWriter = new XmlTextWriter(writer))
+        {
+            textWriter.Formatting = Formatting.Indented;
+            var emptyNamespaces = new XmlSerializerNamespaces();
+            emptyNamespaces.Add(string.Empty, string.Empty);
+            serializer.Serialize(textWriter, this, emptyNamespaces);
+        }
+
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        return memoryStream;
+    }
 }
