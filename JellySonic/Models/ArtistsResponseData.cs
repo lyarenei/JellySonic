@@ -13,22 +13,22 @@ namespace JellySonic.Models;
 /// </summary>
 [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "XML serialization")]
 [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "XML serialization")]
-public class Artists : ResponseData
+public class ArtistsResponseData : ResponseData
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Artists"/> class.
+    /// Initializes a new instance of the <see cref="ArtistsResponseData"/> class.
     /// </summary>
-    public Artists()
+    public ArtistsResponseData()
     {
         IgnoredArticles = string.Empty;
         Index = new List<ArtistIndex>();
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Artists"/> class.
+    /// Initializes a new instance of the <see cref="ArtistsResponseData"/> class.
     /// </summary>
     /// <param name="items">List of items from query.</param>
-    public Artists(IEnumerable<(BaseItem Item, ItemCounts ItemCounts)> items)
+    public ArtistsResponseData(IEnumerable<(BaseItem Item, ItemCounts ItemCounts)> items)
     {
         IgnoredArticles = string.Empty;
         var artistIndex = new List<ArtistIndex>();
@@ -128,7 +128,7 @@ public class ArtistIndex
 }
 
 /// <summary>
-/// An Artist class used to hold data in <see cref="Artists"/> response data.
+/// An Artist class used to hold data in <see cref="ArtistsResponseData"/> response data.
 /// </summary>
 [XmlRoot("artist")]
 public class IndexArtist

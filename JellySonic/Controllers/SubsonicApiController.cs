@@ -87,7 +87,7 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.NotAuthorized);
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.NotAuthorized);
             return BuildOutput(new SubsonicResponse() { ResponseData = err });
         }
 
@@ -102,11 +102,11 @@ public class SubsonicApiController : ControllerBase
         var queryData = _libraryManager.GetAlbumArtists(query);
         if (queryData?.Items == null)
         {
-            var err = new SubsonicError("no artists found", ErrorCodes.DataNotFound);
+            var err = new ErrorResponseData("no artists found", ErrorCodes.DataNotFound);
             return BuildOutput(new SubsonicResponse() { ResponseData = err });
         }
 
-        var artists = new Artists(queryData.Items);
+        var artists = new ArtistsResponseData(queryData.Items);
         return BuildOutput(new SubsonicResponse() { ResponseData = artists });
     }
 
@@ -128,7 +128,7 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get details about the Subsonic software license.
     /// </summary>
-    /// <returns>A Subsonic <see cref="License"/> response.</returns>
+    /// <returns>A Subsonic <see cref="LicenseResponseData"/> response.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getLicense")]
@@ -140,11 +140,11 @@ public class SubsonicApiController : ControllerBase
         SubsonicResponse resp;
         if (AuthenticateUser() != null)
         {
-            resp = new SubsonicResponse { ResponseData = new License() };
+            resp = new SubsonicResponse { ResponseData = new LicenseResponseData() };
         }
         else
         {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
             resp = new SubsonicResponse("failed") { ResponseData = err };
         }
 

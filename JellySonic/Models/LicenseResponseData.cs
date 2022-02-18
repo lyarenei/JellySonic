@@ -5,12 +5,12 @@ namespace JellySonic.Models;
 /// <summary>
 /// A Subsonic licence response.
 /// </summary>
-public class License : ResponseData
+public class LicenseResponseData : ResponseData
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="License"/> class.
+    /// Initializes a new instance of the <see cref="LicenseResponseData"/> class.
     /// </summary>
-    public License()
+    public LicenseResponseData()
     {
         Email = "admin@jellyfin.server";
         ExpiresAt = "9999-12-31T23:59:59";
