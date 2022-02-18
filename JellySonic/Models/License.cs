@@ -5,7 +5,6 @@ namespace JellySonic.Models;
 /// <summary>
 /// A Subsonic licence response.
 /// </summary>
-[XmlRoot("license")]
 public class License : ResponseData
 {
     /// <summary>
