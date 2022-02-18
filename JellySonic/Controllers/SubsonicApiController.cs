@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using Jellyfin.Data.Entities;
 using JellySonic.Models;
 using JellySonic.Services;
 using MediaBrowser.Common.Extensions;
@@ -42,7 +43,7 @@ public class SubsonicApiController : ControllerBase
     /// Authenticate user in Jellyfin.
     /// </summary>
     /// <returns>User authentication is successful.</returns>
-    private bool AuthenticateUser()
+    private User? AuthenticateUser()
     {
         var username = Request.Query["u"];
         var password = Request.Query["p"];
@@ -57,11 +58,11 @@ public class SubsonicApiController : ControllerBase
                     true)
                 .ConfigureAwait(false);
 
-            return user.GetAwaiter().GetResult() != null;
+            return user.GetAwaiter().GetResult();
         }
         catch (AuthenticationException)
         {
-            return false;
+            return null;
         }
     }
 
@@ -111,7 +112,7 @@ public class SubsonicApiController : ControllerBase
         _logger.LogDebug("received getLicense request");
 
         SubsonicResponse resp;
-        if (AuthenticateUser())
+        if (AuthenticateUser() != null)
         {
             resp = new SubsonicResponse { ResponseData = new License() };
         }
