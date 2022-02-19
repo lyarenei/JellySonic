@@ -77,25 +77,20 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse() { ResponseData = err });
         }
 
-        var artistId = Request.Query["id"];
-        var artist = _libraryManager.GetItemById(artistId);
+        var artist = _jellyfinHelper.GetArtistById(Request.Query["id"]);
         if (artist == null)
         {
             var err = new ErrorResponseData("artist not found", ErrorCodes.DataNotFound);
             return BuildOutput(new SubsonicResponse() { ResponseData = err });
         }
 
-        var query = new InternalItemsQuery
+        var albums = _jellyfinHelper.GetAlbumsByArtistId(user, artist.Id);
+        if (albums == null)
         {
-            IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
-            AlbumArtistIds = new[] { artist.Id },
-            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-            Recursive = true
-        };
+            var err = new ErrorResponseData("error when searching albums", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+        }
 
-        query.SetUser(user);
-
-        var albums = _libraryManager.GetItemList(query);
         var artistsResponseData = new ArtistResponseData(artist, albums);
         return BuildOutput(new SubsonicResponse { ResponseData = artistsResponseData });
     }
