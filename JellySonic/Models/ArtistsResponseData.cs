@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Serialization;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
 
 namespace JellySonic.Models;
@@ -42,7 +44,7 @@ public class ArtistsResponseData : ResponseData
             }
 
             int aIdx = artistIndex.FindIndex(idx => idx.Name == indexName);
-            artistIndex[aIdx].Artists = artistIndex[aIdx].Artists.Append(new IndexArtist(item));
+            artistIndex[aIdx].Artists = artistIndex[aIdx].Artists.Append(new IndexArtist((MusicArtist)item));
         }
 
         Index = artistIndex;
@@ -147,13 +149,13 @@ public class IndexArtist : ResponseData
     /// <summary>
     /// Initializes a new instance of the <see cref="IndexArtist"/> class.
     /// </summary>
-    /// <param name="item">A <see cref="BaseItem"/> item.</param>
-    public IndexArtist(BaseItem? item)
+    /// <param name="artist">A <see cref="BaseItem"/> item.</param>
+    public IndexArtist(MusicArtist artist)
     {
-        AlbumCount = "0";
+        AlbumCount = artist.Children.Count().ToString(NumberFormatInfo.InvariantInfo);
         CoverArt = string.Empty;
-        Id = item != null ? item.Id.ToString() : string.Empty;
-        Name = item != null ? item.Name : string.Empty;
+        Id = artist.Id.ToString();
+        Name = artist.Name;
     }
 
     /// <summary>

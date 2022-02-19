@@ -30,7 +30,7 @@ public class ArtistResponseData : IndexArtist
     /// </summary>
     /// <param name="artist">An artist item.</param>
     /// <param name="albumItems">Album items.</param>
-    public ArtistResponseData(BaseItem artist, IEnumerable<BaseItem> albumItems) : base(artist)
+    public ArtistResponseData(BaseItem artist, IEnumerable<BaseItem> albumItems) : base((MusicArtist)artist)
     {
         var albums = new List<Album>();
         foreach (var item in albumItems)
