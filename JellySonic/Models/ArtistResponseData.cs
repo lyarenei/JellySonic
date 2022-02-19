@@ -94,7 +94,7 @@ public class Album
         Duration = TicksToSeconds(album.RunTimeTicks).ToString(NumberFormatInfo.InvariantInfo);
         Id = album.Id.ToString();
         Name = album.Name;
-        SongCount = album.Tracks.Count().ToString(CultureInfo.CurrentCulture);
+        SongCount = album.Tracks.Count().ToString(NumberFormatInfo.InvariantInfo);
     }
 
     /// <summary>
