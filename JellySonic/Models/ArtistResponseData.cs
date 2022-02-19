@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml.Serialization;
 using MediaBrowser.Controller.Entities.Audio;
+using static JellySonic.Utils.Utils;
 
 namespace JellySonic.Models;
 
@@ -90,7 +91,7 @@ public class Album
         ArtistId = album.DisplayParentId.ToString();
         CoverArt = string.Empty;
         Created = album.DateCreated;
-        Duration = album.RunTimeTicks != null ? (album.RunTimeTicks / TimeSpan.TicksPerSecond).ToString()! : "0";
+        Duration = TicksToSeconds(album.RunTimeTicks).ToString(NumberFormatInfo.InvariantInfo);
         Id = album.Id.ToString();
         Name = album.Name;
         SongCount = album.Tracks.Count().ToString(CultureInfo.CurrentCulture);

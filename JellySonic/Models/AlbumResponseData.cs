@@ -44,7 +44,7 @@ public class AlbumResponseData : ResponseData
         ArtistId = album.DisplayParentId.ToString();
         CoverArt = string.Empty;
         Created = album.DateCreated;
-        Duration = album.RunTimeTicks != null ? (album.RunTimeTicks / TimeSpan.TicksPerSecond).ToString()! : "0";
+        Duration = TicksToSeconds(album.RunTimeTicks).ToString(NumberFormatInfo.InvariantInfo);
         Id = album.Id.ToString();
         Name = album.Name;
         Songs = album.Tracks.Select(track => new Song(track)).ToList();
@@ -166,7 +166,7 @@ public class Song
         IsDir = "false";
         CoverArt = string.Empty;
         Created = audio.DateCreated;
-        Duration = audio.RunTimeTicks != null ? (audio.RunTimeTicks / TimeSpan.TicksPerSecond).ToString()! : "0";
+        Duration = TicksToSeconds(audio.RunTimeTicks).ToString(NumberFormatInfo.InvariantInfo);
         BitRate = (audio.TotalBitrate / 1000).ToString() ?? "0";
         FileSize = audio.Size?.ToString(NumberFormatInfo.InvariantInfo) ?? "0";
         FilenameSuffix = GetExtension(audio.Path)[1..];
