@@ -68,8 +68,14 @@ public class JellyfinHelper
     /// <returns><see cref="MusicArtist"/>.</returns>
     public MusicArtist? GetArtistById(string artistId)
     {
-        // todo error handling?
-        return (MusicArtist)_libraryManager.GetItemById(artistId);
+        try
+        {
+            return (MusicArtist)_libraryManager.GetItemById(artistId);
+        }
+        catch (ArgumentNullException)
+        {
+            return null;
+        }
     }
 
     /// <summary>
