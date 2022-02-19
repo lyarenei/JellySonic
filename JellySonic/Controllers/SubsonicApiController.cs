@@ -1,8 +1,8 @@
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using JellySonic.Models;
+using JellySonic.Services;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
@@ -22,6 +22,7 @@ public class SubsonicApiController : ControllerBase
     private readonly ILogger<SubsonicApiController> _logger;
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
+    private readonly JellyfinHelper _jellyfinHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SubsonicApiController"/> class.
@@ -34,33 +35,18 @@ public class SubsonicApiController : ControllerBase
         _logger = loggerFactory.CreateLogger<SubsonicApiController>();
         _userManager = userManager;
         _libraryManager = libraryManager;
+        _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager);
     }
 
     /// <summary>
     /// Authenticate user in Jellyfin.
     /// </summary>
     /// <returns>User authentication is successful.</returns>
-    private User? AuthenticateUser()
+    public User? AuthenticateUser()
     {
         var username = Request.Query["u"];
         var password = Request.Query["p"];
-
-        try
-        {
-            var user = this._userManager.AuthenticateUser(
-                    username,
-                    password,
-                    string.Empty,
-                    HttpContext.GetNormalizedRemoteIp().ToString(),
-                    true)
-                .ConfigureAwait(false);
-
-            return user.GetAwaiter().GetResult();
-        }
-        catch (AuthenticationException)
-        {
-            return null;
-        }
+        return _jellyfinHelper.AuthenticateUser(username, password, HttpContext.GetNormalizedRemoteIp().ToString());
     }
 
     /// <summary>
