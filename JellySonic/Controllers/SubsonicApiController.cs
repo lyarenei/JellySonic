@@ -88,7 +88,7 @@ public class SubsonicApiController : ControllerBase
         if (user == null)
         {
             var err = new ErrorResponseData("invalid credentials", ErrorCodes.NotAuthorized);
-            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+            return BuildOutput(new SubsonicResponse { ResponseData = err });
         }
 
         var query = new InternalItemsQuery
@@ -102,11 +102,11 @@ public class SubsonicApiController : ControllerBase
         if (queryData?.Items == null)
         {
             var err = new ErrorResponseData("no artists found", ErrorCodes.DataNotFound);
-            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+            return BuildOutput(new SubsonicResponse { ResponseData = err });
         }
 
         var artists = new ArtistsResponseData(queryData.Items);
-        return BuildOutput(new SubsonicResponse() { ResponseData = artists });
+        return BuildOutput(new SubsonicResponse { ResponseData = artists });
     }
 
     /// <summary>
