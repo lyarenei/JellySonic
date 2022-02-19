@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Serialization;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 
 namespace JellySonic.Models;

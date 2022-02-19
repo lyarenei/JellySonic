@@ -1,11 +1,8 @@
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
 using JellySonic.Models;
 using JellySonic.Services;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -110,22 +107,15 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse { ResponseData = err });
         }
 
-        var query = new InternalItemsQuery
+        var artists = _jellyfinHelper.GetArtists(user);
+        if (artists == null)
         {
-            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-            Recursive = true
-        };
-
-        query.SetUser(user);
-        var queryData = _libraryManager.GetAlbumArtists(query);
-        if (queryData?.Items == null)
-        {
-            var err = new ErrorResponseData("no artists found", ErrorCodes.DataNotFound);
+            var err = new ErrorResponseData("error when retrieving artists", ErrorCodes.Generic);
             return BuildOutput(new SubsonicResponse { ResponseData = err });
         }
 
-        var artists = new ArtistsResponseData(queryData.Items);
-        return BuildOutput(new SubsonicResponse { ResponseData = artists });
+        var artistsResponseData = new ArtistsResponseData(artists);
+        return BuildOutput(new SubsonicResponse { ResponseData = artistsResponseData });
     }
 
     /// <summary>

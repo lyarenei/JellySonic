@@ -98,4 +98,33 @@ public class JellyfinHelper
         var queryData = _libraryManager.GetItemList(query);
         return queryData?.Cast<MusicAlbum>().ToList();
     }
+
+    /// <summary>
+    /// Get all artists.
+    /// </summary>
+    /// <param name="user">User performing the query.</param>
+    /// <returns>List of artists. Null if error.</returns>
+    public IEnumerable<MusicArtist>? GetArtists(User user)
+    {
+        var query = new InternalItemsQuery
+        {
+            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+            Recursive = true
+        };
+
+        query.SetUser(user);
+        var queryData = _libraryManager.GetAlbumArtists(query);
+        if (queryData == null)
+        {
+            return null;
+        }
+
+        var artists = new List<MusicArtist>();
+        foreach (var (item, _) in queryData.Items)
+        {
+            artists.Add((MusicArtist)item);
+        }
+
+        return artists;
+    }
 }

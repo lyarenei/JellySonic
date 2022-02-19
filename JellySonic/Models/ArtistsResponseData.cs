@@ -6,7 +6,6 @@ using System.Linq;
 using System.Xml.Serialization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Model.Dto;
 
 namespace JellySonic.Models;
 
@@ -29,22 +28,22 @@ public class ArtistsResponseData : ResponseData
     /// <summary>
     /// Initializes a new instance of the <see cref="ArtistsResponseData"/> class.
     /// </summary>
-    /// <param name="items">List of items from query.</param>
-    public ArtistsResponseData(IEnumerable<(BaseItem Item, ItemCounts ItemCounts)> items)
+    /// <param name="artists">List of items from query.</param>
+    public ArtistsResponseData(IEnumerable<MusicArtist> artists)
     {
         IgnoredArticles = string.Empty;
         var artistIndex = new List<ArtistIndex>();
 
-        foreach (var (item, _) in items)
+        foreach (var artist in artists)
         {
-            string indexName = char.IsLetter(item.Name.First()) ? item.Name.First().ToString() : "#";
+            string indexName = char.IsLetter(artist.Name.First()) ? artist.Name.First().ToString() : "#";
             if (!artistIndex.Exists(idx => idx.Name == indexName))
             {
                 artistIndex.Add(new ArtistIndex(indexName));
             }
 
             int aIdx = artistIndex.FindIndex(idx => idx.Name == indexName);
-            artistIndex[aIdx].Artists = artistIndex[aIdx].Artists.Append(new IndexArtist((MusicArtist)item));
+            artistIndex[aIdx].Artists = artistIndex[aIdx].Artists.Append(new IndexArtist((MusicArtist)artist));
         }
 
         Index = artistIndex;
