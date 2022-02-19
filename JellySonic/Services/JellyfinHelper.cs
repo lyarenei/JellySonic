@@ -72,7 +72,7 @@ public class JellyfinHelper
         {
             return (MusicArtist)_libraryManager.GetItemById(artistId);
         }
-        catch (ArgumentNullException)
+        catch
         {
             return null;
         }
