@@ -56,6 +56,34 @@ public class SubsonicApiController : ControllerBase
     }
 
     /// <summary>
+    /// Get an album.
+    /// </summary>
+    /// <returns>Found album or error.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getAlbum")]
+    [Route("getAlbum.view")]
+    public ActionResult GetAlbum()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse { ResponseData = err });
+        }
+
+        var album = _jellyfinHelper.GetAlbumById(Request.Query["id"]);
+        if (album == null)
+        {
+            var err = new ErrorResponseData("album not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+        }
+
+        var albumResponseData = new AlbumResponseData(album);
+        return BuildOutput(new SubsonicResponse { ResponseData = albumResponseData });
+    }
+
+    /// <summary>
     /// Get an artist.
     /// </summary>
     /// <returns>Found artist or error.</returns>

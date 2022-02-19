@@ -62,6 +62,23 @@ public class JellyfinHelper
     }
 
     /// <summary>
+    /// Get album by specified ID.
+    /// </summary>
+    /// <param name="albumId">IF of the album.</param>
+    /// <returns><see cref="MusicAlbum"/>, null on error.</returns>
+    public MusicAlbum? GetAlbumById(string albumId)
+    {
+        try
+        {
+            return (MusicAlbum)_libraryManager.GetItemById(albumId);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Get artist by specified ID.
     /// </summary>
     /// <param name="artistId">ID of the artist.</param>

@@ -52,6 +52,7 @@ public class SubsonicResponse
     /// <summary>
     /// Gets or sets response data for serialization.
     /// </summary>
+    [XmlElement("album", typeof(AlbumResponseData))]
     [XmlElement("artist", typeof(ArtistResponseData))]
     [XmlElement("artists", typeof(ArtistsResponseData))]
     [XmlElement("error", typeof(ErrorResponseData))]
