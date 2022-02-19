@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using JellySonic.Models;
-using JellySonic.Models.Subsonic;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
