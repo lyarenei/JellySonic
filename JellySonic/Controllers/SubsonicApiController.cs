@@ -106,7 +106,7 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.NotAuthorized);
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
             return BuildOutput(new SubsonicResponse { ResponseData = err });
         }
 
