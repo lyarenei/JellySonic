@@ -131,7 +131,7 @@ public class ArtistIndex
 /// An Artist class used to hold data in <see cref="ArtistsResponseData"/> response data.
 /// </summary>
 [XmlRoot("artist")]
-public class IndexArtist
+public class IndexArtist : ResponseData
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="IndexArtist"/> class.

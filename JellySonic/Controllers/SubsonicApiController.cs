@@ -75,6 +75,46 @@ public class SubsonicApiController : ControllerBase
     }
 
     /// <summary>
+    /// Get an artist.
+    /// </summary>
+    /// <returns>Found artist or error.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getArtist")]
+    [Route("getArtist.view")]
+    public ActionResult GetArtist()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.NotAuthorized);
+            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+        }
+
+        var artistId = Request.Query["id"];
+        var artist = _libraryManager.GetItemById(artistId);
+        if (artist == null)
+        {
+            var err = new ErrorResponseData("artist not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+        }
+
+        var query = new InternalItemsQuery
+        {
+            IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
+            AlbumArtistIds = new[] { artist.Id },
+            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+            Recursive = true
+        };
+
+        query.SetUser(user);
+
+        var albums = _libraryManager.GetItemList(query);
+        var artistsResponseData = new ArtistResponseData(artist, albums);
+        return BuildOutput(new SubsonicResponse { ResponseData = artistsResponseData });
+    }
+
+    /// <summary>
     /// Get all artists.
     /// </summary>
     /// <returns>Artists Subsonic response.</returns>
