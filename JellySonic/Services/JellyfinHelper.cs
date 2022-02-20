@@ -144,4 +144,21 @@ public class JellyfinHelper
 
         return artists;
     }
+
+    /// <summary>
+    /// Get a song by specified ID.
+    /// </summary>
+    /// <param name="songId">ID of the song.</param>
+    /// <returns><see cref="Audio"/>. Null if error.</returns>
+    public Audio? GetSongById(string songId)
+    {
+        try
+        {
+            return (Audio)_libraryManager.GetItemById(songId);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

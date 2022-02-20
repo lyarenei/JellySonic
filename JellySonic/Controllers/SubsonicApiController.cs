@@ -186,4 +186,32 @@ public class SubsonicApiController : ControllerBase
 
         return BuildOutput(resp);
     }
+
+    /// <summary>
+    /// Get a song.
+    /// </summary>
+    /// <returns>A subsonic <see cref="Song"/> response.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getSong")]
+    [Route("getSong.view")]
+    public ActionResult GetSong()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse { ResponseData = err });
+        }
+
+        var song = _jellyfinHelper.GetSongById(Request.Query["id"]);
+        if (song == null)
+        {
+            var err = new ErrorResponseData("song not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+        }
+
+        var songResponseData = new SongResponseData(song);
+        return BuildOutput(new SubsonicResponse { ResponseData = songResponseData });
+    }
 }
