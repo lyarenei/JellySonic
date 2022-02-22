@@ -56,6 +56,7 @@ public class SubsonicResponse
     [XmlElement("artist", typeof(ArtistResponseData))]
     [XmlElement("artists", typeof(ArtistsResponseData))]
     [XmlElement("error", typeof(ErrorResponseData))]
+    [XmlElement("musicFolders", typeof(MusicFoldersResponseData))]
     [XmlElement("license", typeof(LicenseResponseData))]
     public object? ResponseDataSerialization
     {

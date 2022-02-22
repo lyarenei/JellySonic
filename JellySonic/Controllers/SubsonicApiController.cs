@@ -214,4 +214,32 @@ public class SubsonicApiController : ControllerBase
         var songResponseData = new SongResponseData(song);
         return BuildOutput(new SubsonicResponse { ResponseData = songResponseData });
     }
+
+    /// <summary>
+    /// Get all music folders.
+    /// </summary>
+    /// <returns>A Subsonic music folders response.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getMusicFolders")]
+    [Route("getMusicFolders.view")]
+    public ActionResult GetMusicFolders()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse { ResponseData = err });
+        }
+
+        var folders = _jellyfinHelper.GetFolders(user);
+        if (folders == null)
+        {
+            var err = new ErrorResponseData("folders not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+        }
+
+        var foldersResponseData = new MusicFoldersResponseData(folders);
+        return BuildOutput(new SubsonicResponse { ResponseData = foldersResponseData });
+    }
 }

@@ -161,4 +161,24 @@ public class JellyfinHelper
             return null;
         }
     }
+
+    /// <summary>
+    /// Get folders.
+    /// </summary>
+    /// <param name="user">User performing the query.</param>
+    /// <returns>List of folders. Null if error.</returns>
+    public IEnumerable<Folder>? GetFolders(User user)
+    {
+        var query = new InternalItemsQuery
+        {
+            IncludeItemTypes = new[] { BaseItemKind.Folder },
+            SourceTypes = new[] { SourceType.Library },
+            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+            Recursive = true
+        };
+
+        query.SetUser(user);
+        var queryData = _libraryManager.GetItemList(query);
+        return queryData?.Cast<Folder>().ToList();
+    }
 }
