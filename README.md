@@ -5,6 +5,7 @@ This plugin enables your Jellyfin server to serve Subsonic clients.
 
 ## Features
 - Implemented endpoints:
+  - download
   - getArtist
   - getArtists
   - getAlbum

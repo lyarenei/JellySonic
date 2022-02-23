@@ -300,4 +300,32 @@ public class SubsonicApiController : ControllerBase
         var fs = new FileStream(item.PrimaryImagePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         return File(fs, MediaTypeNames.Image.Jpeg);
     }
+
+    /// <summary>
+    /// Download an item.
+    /// </summary>
+    /// <returns>Item as binary data.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("download")]
+    [Route("download.view")]
+    public ActionResult Download()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse { ResponseData = err });
+        }
+
+        var item = _jellyfinHelper.GetItemById(Request.Query["id"]);
+        if (item == null)
+        {
+            var err = new ErrorResponseData("item not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse { ResponseData = err });
+        }
+
+        var fs = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return File(fs, MediaTypeNames.Application.Octet);
+    }
 }
