@@ -19,7 +19,7 @@ public class SongResponseData : ResponseData
     public SongResponseData()
     {
         Id = string.Empty;
-        Parent = string.Empty;
+        ParentId = string.Empty;
         Title = string.Empty;
         AlbumName = string.Empty;
         ArtistName = string.Empty;
@@ -42,7 +42,7 @@ public class SongResponseData : ResponseData
     public SongResponseData(Audio audio)
     {
         Id = audio.Id.ToString();
-        Parent = string.Empty;
+        ParentId = string.Empty;
         Title = audio.Name;
         AlbumName = audio.Album;
         ArtistName = audio.Artists.FirstOrDefault(string.Empty);
@@ -70,7 +70,7 @@ public class SongResponseData : ResponseData
     /// TODO - find out what is this.
     /// </summary>
     [XmlAttribute("parent")]
-    public string Parent { get; set; }
+    public string ParentId { get; set; }
 
     /// <summary>
     /// Gets or sets name of the song.
