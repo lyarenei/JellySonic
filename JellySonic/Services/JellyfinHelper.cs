@@ -198,4 +198,14 @@ public class JellyfinHelper
             return null;
         }
     }
+
+    /// <summary>
+    /// Get item by specified ID.
+    /// </summary>
+    /// <param name="itemId">ID of the item.</param>
+    /// <returns><see cref="BaseItem"/>. Null if error.</returns>
+    public BaseItem? GetItemById(string itemId)
+    {
+        return _libraryManager.GetItemById(itemId);
+    }
 }

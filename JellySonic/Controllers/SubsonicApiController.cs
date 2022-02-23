@@ -1,3 +1,5 @@
+using System.IO;
+using System.Net.Mime;
 using Jellyfin.Data.Entities;
 using JellySonic.Models;
 using JellySonic.Services;
@@ -269,5 +271,33 @@ public class SubsonicApiController : ControllerBase
 
         var directoryResponseData = new DirectoryResponseData(directory);
         return BuildOutput(new SubsonicResponse { ResponseData = directoryResponseData });
+    }
+
+    /// <summary>
+    /// Get cover art.
+    /// </summary>
+    /// <returns>Cover art as binary data.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Route("getCoverArt")]
+    [Route("getCoverArt.view")]
+    public ActionResult GetCoverArt()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse { ResponseData = err });
+        }
+
+        var item = _jellyfinHelper.GetItemById(Request.Query["id"]);
+        if (item == null)
+        {
+            return NoContent();
+        }
+
+        var fs = new FileStream(item.PrimaryImagePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return File(fs, MediaTypeNames.Image.Jpeg);
     }
 }
