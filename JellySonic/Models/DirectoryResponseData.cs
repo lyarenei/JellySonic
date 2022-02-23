@@ -38,7 +38,7 @@ public class DirectoryResponseData : ResponseData
         Id = folder.Id.ToString();
         ParentId = folder.ParentId.ToString();
         Name = folder.Name;
-        Children = folder.Children.Select(child => new Child((Folder)child)).ToList();
+        Children = folder.Children.Select(item => new Child(item)).ToList();
     }
 
     /// <summary>
