@@ -43,7 +43,7 @@ public class ArtistsResponseData : ResponseData
             }
 
             int aIdx = artistIndex.FindIndex(idx => idx.Name == indexName);
-            artistIndex[aIdx].Artists = artistIndex[aIdx].Artists.Append(new IndexArtist((MusicArtist)artist));
+            artistIndex[aIdx].Artists = artistIndex[aIdx].Artists.Append(new IndexArtist(artist));
         }
 
         Index = artistIndex;
