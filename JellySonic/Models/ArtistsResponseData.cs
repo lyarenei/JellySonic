@@ -36,7 +36,7 @@ public class ArtistsResponseData : ResponseData
 
         foreach (var artist in artists)
         {
-            string indexName = char.IsLetter(artist.Name.First()) ? artist.Name.First().ToString() : "#";
+            string indexName = char.IsLetter(artist.SortName.First()) ? artist.SortName.First().ToString() : "#";
             if (!artistIndex.Exists(idx => idx.Name == indexName))
             {
                 artistIndex.Add(new ArtistIndex(indexName));
