@@ -55,6 +55,7 @@ public class SubsonicResponse
     [XmlElement("album", typeof(AlbumResponseData))]
     [XmlElement("artist", typeof(ArtistResponseData))]
     [XmlElement("artists", typeof(ArtistsResponseData))]
+    [XmlElement("directory", typeof(DirectoryResponseData))]
     [XmlElement("error", typeof(ErrorResponseData))]
     [XmlElement("musicFolders", typeof(MusicFoldersResponseData))]
     [XmlElement("license", typeof(LicenseResponseData))]

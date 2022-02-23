@@ -9,6 +9,7 @@ This plugin enables your Jellyfin server to serve Subsonic clients.
   - getArtists
   - getAlbum
   - getLicense
+  - getMusicDirectory
   - getMusicFolders
   - getSong
   - ping

@@ -181,4 +181,21 @@ public class JellyfinHelper
         var queryData = _libraryManager.GetItemList(query);
         return queryData?.Cast<Folder>().ToList();
     }
+
+    /// <summary>
+    /// Get a directory by specified ID.
+    /// </summary>
+    /// <param name="dirId">ID of the directory.</param>
+    /// <returns><see cref="Folder"/>. Null if error.</returns>
+    public Folder? GetDirectoryById(string dirId)
+    {
+        try
+        {
+            return (Folder)_libraryManager.GetItemById(dirId);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
