@@ -137,7 +137,7 @@ public class Child
         TrackOrder = item.IndexNumber.ToString() ?? "0";
         ReleaseYear = item.ProductionYear.ToString() ?? "0";
         Genre = item.Genres.FirstOrDefault(string.Empty);
-        CoverArt = string.Empty;
+        CoverArt = item.Id.ToString();
         FileSize = item.Size?.ToString(NumberFormatInfo.InvariantInfo) ?? "0";
         ContentType = string.Empty;
 

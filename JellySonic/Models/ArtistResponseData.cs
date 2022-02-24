@@ -89,7 +89,7 @@ public class Album
     {
         Artist = album.AlbumArtist;
         ArtistId = album.DisplayParentId.ToString();
-        CoverArt = string.Empty;
+        CoverArt = album.Id.ToString();
         Created = album.DateCreated;
         Duration = TicksToSeconds(album.RunTimeTicks).ToString(NumberFormatInfo.InvariantInfo);
         Id = album.Id.ToString();

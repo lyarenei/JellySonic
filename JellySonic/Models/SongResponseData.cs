@@ -47,7 +47,7 @@ public class SongResponseData : ResponseData
         AlbumName = audio.Album;
         ArtistName = audio.Artists.FirstOrDefault(string.Empty);
         IsDir = "false";
-        CoverArt = string.Empty;
+        CoverArt = audio.Id.ToString();
         Created = audio.DateCreated;
         Duration = TicksToSeconds(audio.RunTimeTicks).ToString(NumberFormatInfo.InvariantInfo);
         BitRate = (audio.TotalBitrate / 1000).ToString() ?? "0";

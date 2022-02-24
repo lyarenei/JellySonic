@@ -152,7 +152,7 @@ public class IndexArtist : ResponseData
     public IndexArtist(MusicArtist artist)
     {
         AlbumCount = artist.Children.Count().ToString(NumberFormatInfo.InvariantInfo);
-        CoverArt = string.Empty;
+        CoverArt = artist.Id.ToString();
         Id = artist.Id.ToString();
         Name = artist.Name;
     }
