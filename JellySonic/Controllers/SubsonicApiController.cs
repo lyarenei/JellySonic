@@ -292,7 +292,7 @@ public class SubsonicApiController : ControllerBase
         }
 
         var item = _jellyfinHelper.GetItemById(Request.Query["id"]);
-        if (item == null)
+        if (string.IsNullOrEmpty(item?.PrimaryImagePath))
         {
             return NoContent();
         }
