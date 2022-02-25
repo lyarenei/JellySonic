@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 
 namespace JellySonic.Utils;
 
@@ -34,5 +35,16 @@ public static class Utils
             ".wav" => "audio/wave",
             _ => "audio/basic"
         };
+    }
+
+    /// <summary>
+    /// Decode hex-encoded string to ascii.
+    /// </summary>
+    /// <param name="hexString">String to decode.</param>
+    /// <returns>Decoded string.</returns>
+    public static string HexToAscii(string hexString)
+    {
+        var bytes = Convert.FromHexString(hexString);
+        return bytes.Aggregate(string.Empty, (current, b) => current + (char)b);
     }
 }

@@ -49,8 +49,7 @@ public class SubsonicApiController : ControllerBase
 
         if (password.Contains("enc:", StringComparison.InvariantCulture))
         {
-            var bytes = Convert.FromHexString(password[4..]);
-            password = bytes.Aggregate(string.Empty, (current, b) => current + (char)b);
+            password = Utils.Utils.HexToAscii(password[4..]);
         }
 
         return _jellyfinHelper.AuthenticateUser(username, password, endpoint);
