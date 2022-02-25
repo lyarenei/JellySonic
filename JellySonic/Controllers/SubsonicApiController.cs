@@ -1,6 +1,9 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Mime;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using JellySonic.Models;
 using JellySonic.Services;
@@ -318,7 +321,7 @@ public class SubsonicApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("download")]
     [Route("download.view")]
-    public ActionResult Download()
+    public async Task<ActionResult> Download()
     {
         var user = AuthenticateUser();
         if (user == null)
@@ -335,6 +338,8 @@ public class SubsonicApiController : ControllerBase
         }
 
         var fs = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
-        return File(fs, MediaTypeNames.Application.Octet);
+        byte[] content = new byte[fs.Length];
+        await fs.ReadAsync(content, CancellationToken.None).ConfigureAwait(false);
+        return new FileContentResult(content, MediaTypeNames.Application.Octet);
     }
 }
