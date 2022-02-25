@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net.Mime;
 using Jellyfin.Data.Entities;
@@ -41,9 +42,17 @@ public class SubsonicApiController : ControllerBase
     /// <returns>User authentication is successful.</returns>
     public User? AuthenticateUser()
     {
-        var username = Request.Query["u"];
-        var password = Request.Query["p"];
-        return _jellyfinHelper.AuthenticateUser(username, password, HttpContext.GetNormalizedRemoteIp().ToString());
+        string username = Request.Query["u"];
+        string password = Request.Query["p"];
+        string endpoint = HttpContext.GetNormalizedRemoteIp().ToString();
+
+        if (password.Contains("enc:", StringComparison.InvariantCulture))
+        {
+            var bytes = Convert.FromHexString(password[4..]);
+            password = bytes.Aggregate(string.Empty, (current, b) => current + (char)b);
+        }
+
+        return _jellyfinHelper.AuthenticateUser(username, password, endpoint);
     }
 
     /// <summary>
