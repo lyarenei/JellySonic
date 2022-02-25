@@ -44,6 +44,22 @@ public class SubsonicResponse
     }
 
     /// <summary>
+    /// Memory stream types.
+    /// </summary>
+    public enum MemoryStreamFormat
+    {
+        /// <summary>
+        /// Use XML data format.
+        /// </summary>
+        Xml,
+
+        /// <summary>
+        /// Use JSON data format.
+        /// </summary>
+        Json
+    }
+
+    /// <summary>
     /// Gets or sets response data.
     /// </summary>
     [XmlIgnore]
@@ -80,8 +96,18 @@ public class SubsonicResponse
     /// <summary>
     /// Converts object to memory stream.
     /// </summary>
+    /// <param name="streamFormat"><see cref="MemoryStreamFormat"/>.</param>
     /// <returns>Memory stream with object data.</returns>
-    public MemoryStream ToMemoryStream()
+    public MemoryStream ToMemoryStream(MemoryStreamFormat streamFormat = MemoryStreamFormat.Xml)
+    {
+        return streamFormat switch
+        {
+            MemoryStreamFormat.Json => this.ToJsonMemoryStream(),
+            _ => this.ToXmlMemoryStream()
+        };
+    }
+
+    private MemoryStream ToXmlMemoryStream()
     {
         // Taken from https://github.com/jellyfin/jellyfin-plugin-opds/blob/b78a8bcc979581fe92835235a2c0d59516b5df15/Jellyfin.Plugin.Opds/OpdsApi.cs#L294
         var memoryStream = new MemoryStream();
@@ -97,5 +123,10 @@ public class SubsonicResponse
 
         memoryStream.Seek(0, SeekOrigin.Begin);
         return memoryStream;
+    }
+
+    private MemoryStream ToJsonMemoryStream()
+    {
+        return new MemoryStream();
     }
 }
