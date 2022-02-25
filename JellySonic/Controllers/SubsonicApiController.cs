@@ -321,6 +321,8 @@ public class SubsonicApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("download")]
     [Route("download.view")]
+    [Route("stream")]
+    [Route("stream.view")]
     public async Task<ActionResult> Download()
     {
         var user = AuthenticateUser();

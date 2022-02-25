@@ -18,6 +18,8 @@ This plugin enables your Jellyfin server to serve Subsonic clients.
   - ping
     - does not require authentication
       - TBD configurable (per user)
+  - stream
+    - no optional parameters implemented
 
 ### Known limitations/bugs
 
