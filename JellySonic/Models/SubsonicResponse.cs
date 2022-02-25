@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
+using JellySonic.Json;
 using JellySonic.Services;
 using MediaBrowser.Model.IO;
 
@@ -150,6 +151,7 @@ public class SubsonicResponse
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+        serializerOpts.Converters.Add(new SubsonicResponseJsonConverter());
 
         JsonSerializer.Serialize(memoryStream, this, serializerOpts);
         memoryStream.Seek(0, SeekOrigin.Begin);

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
 namespace JellySonic.Models;
@@ -27,11 +28,13 @@ public class LicenseResponseData : ResponseData
     /// Gets or sets licence expiration date.
     /// </summary>
     [XmlAttribute("licenseExpires")]
+    [JsonPropertyName("licenseExpires")]
     public string ExpiresAt { get; set; }
 
     /// <summary>
     /// Gets or sets indicates if a licence is valid.
     /// </summary>
     [XmlAttribute("valid")]
+    [JsonPropertyName("valid")]
     public string IsValid { get; set; }
 }
