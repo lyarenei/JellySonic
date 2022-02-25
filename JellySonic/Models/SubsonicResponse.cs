@@ -107,6 +107,21 @@ public class SubsonicResponse
         };
     }
 
+    /// <summary>
+    /// Convert format string to enum.
+    /// Defaults to XML.
+    /// </summary>
+    /// <param name="format">Format as string.</param>
+    /// <returns><see cref="MemoryStreamFormat"/>.</returns>
+    public static MemoryStreamFormat FormatFromString(string format)
+    {
+        return format switch
+        {
+            "json" => MemoryStreamFormat.Json,
+            _ => MemoryStreamFormat.Xml
+        };
+    }
+
     private MemoryStream ToXmlMemoryStream()
     {
         // Taken from https://github.com/jellyfin/jellyfin-plugin-opds/blob/b78a8bcc979581fe92835235a2c0d59516b5df15/Jellyfin.Plugin.Opds/OpdsApi.cs#L294

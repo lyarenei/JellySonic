@@ -61,8 +61,13 @@ public class SubsonicApiController : ControllerBase
     /// <returns>Output file.</returns>
     public FileStreamResult BuildOutput(SubsonicResponse subsonicResponse)
     {
-        var memoryStream = subsonicResponse.ToMemoryStream();
-        return File(memoryStream, "application/xml; charset=utf-8");
+        var format = SubsonicResponse.FormatFromString(Request.Query["f"]);
+        var memoryStream = subsonicResponse.ToMemoryStream(format);
+        return format switch
+        {
+            SubsonicResponse.MemoryStreamFormat.Json => File(memoryStream, "application/json; charset=utf-8"),
+            _ => File(memoryStream, "application/xml; charset=utf-8")
+        };
     }
 
     /// <summary>
