@@ -13,7 +13,7 @@ namespace JellySonic.Models;
 /// <summary>
 /// Base Subsonic response.
 /// </summary>
-[XmlRoot(ElementName = "subsonic-response")]
+[XmlRoot("subsonic-response")]
 public class SubsonicResponse
 {
     /// <summary>
