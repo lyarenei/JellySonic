@@ -1,5 +1,7 @@
 using System.IO;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 using JellySonic.Services;
@@ -142,6 +144,15 @@ public class SubsonicResponse
 
     private MemoryStream ToJsonMemoryStream()
     {
-        return new MemoryStream();
+        var memoryStream = new MemoryStream();
+        var serializerOpts = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        JsonSerializer.Serialize(memoryStream, this, serializerOpts);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        return memoryStream;
     }
 }
