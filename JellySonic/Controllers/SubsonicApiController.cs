@@ -23,7 +23,6 @@ namespace JellySonic.Controllers;
 public class SubsonicApiController : ControllerBase
 {
     private readonly ILogger<SubsonicApiController> _logger;
-    private readonly ILibraryManager _libraryManager;
     private readonly JellyfinHelper _jellyfinHelper;
 
     /// <summary>
@@ -35,7 +34,6 @@ public class SubsonicApiController : ControllerBase
     public SubsonicApiController(ILoggerFactory loggerFactory, IUserManager userManager, ILibraryManager libraryManager)
     {
         _logger = loggerFactory.CreateLogger<SubsonicApiController>();
-        _libraryManager = libraryManager;
         _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager);
     }
 
