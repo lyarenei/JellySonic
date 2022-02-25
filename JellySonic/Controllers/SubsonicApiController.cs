@@ -340,6 +340,6 @@ public class SubsonicApiController : ControllerBase
         var fs = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
         byte[] content = new byte[fs.Length];
         await fs.ReadAsync(content, CancellationToken.None).ConfigureAwait(false);
-        return new FileContentResult(content, MediaTypeNames.Application.Octet);
+        return new FileContentResult(content, Utils.Utils.GetMimeType(item.Path));
     }
 }
