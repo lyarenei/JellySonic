@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using JellySonic.Types;
 using MediaBrowser.Controller.Entities.Audio;
@@ -67,12 +68,14 @@ public class Genres : IResponseData
     /// Gets or sets collection of genres.
     /// </summary>
     [XmlIgnore]
+    [JsonIgnore]
     public IEnumerable<Genre> GenreList { get; set; }
 
     /// <summary>
     /// Gets or sets collection of genres for serialization.
     /// </summary>
     [XmlElement("genre")]
+    [JsonPropertyName("genre")]
     [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public List<Genre> GenreListSerialize

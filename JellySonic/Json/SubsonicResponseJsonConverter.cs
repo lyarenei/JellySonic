@@ -30,6 +30,7 @@ public class SubsonicResponseJsonConverter : JsonConverter<SubsonicResponse>
             { typeof(MusicFolders), "musicFolders" },
             { typeof(Directory), "directory" },
             { typeof(SubsonicError), "error" },
+            { typeof(Genres), "genres" },
         };
 
         writer.WriteStartObject();
