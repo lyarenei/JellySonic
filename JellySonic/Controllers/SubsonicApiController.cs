@@ -1,16 +1,20 @@
 using System;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using JellySonic.Models;
 using JellySonic.Services;
+using JellySonic.Types;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Directory = JellySonic.Models.Directory;
 
 namespace JellySonic.Controllers;
 
@@ -83,18 +87,18 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var album = _jellyfinHelper.GetAlbumById(Request.Query["id"]);
         if (album == null)
         {
-            var err = new ErrorResponseData("album not found", ErrorCodes.DataNotFound);
-            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+            var err = new SubsonicError("album not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var albumResponseData = new AlbumResponseData(album);
+        var albumResponseData = new AlbumWithSongsId3(album);
         return BuildOutput(new SubsonicResponse { ResponseData = albumResponseData });
     }
 
@@ -111,25 +115,28 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var artist = _jellyfinHelper.GetArtistById(Request.Query["id"]);
         if (artist == null)
         {
-            var err = new ErrorResponseData("artist not found", ErrorCodes.DataNotFound);
-            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+            var err = new SubsonicError("artist not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var albums = _jellyfinHelper.GetAlbumsByArtistId(user, artist.Id);
         if (albums == null)
         {
-            var err = new ErrorResponseData("error when searching albums", ErrorCodes.Generic);
-            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+            var err = new SubsonicError("error when searching albums", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var artistsResponseData = new ArtistResponseData(artist, albums);
+        var artistsResponseData = new ArtistWithAlbumsId3(artist, albums)
+        {
+            AlbumCount = albums.Count().ToString(NumberFormatInfo.InvariantInfo)
+        };
         return BuildOutput(new SubsonicResponse { ResponseData = artistsResponseData });
     }
 
@@ -146,18 +153,18 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var artists = _jellyfinHelper.GetArtists(user);
         if (artists == null)
         {
-            var err = new ErrorResponseData("error when retrieving artists", ErrorCodes.Generic);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
+            var err = new SubsonicError("error when retrieving artists", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var artistsResponseData = new ArtistsResponseData(artists);
+        var artistsResponseData = new ArtistsId3(artists);
         return BuildOutput(new SubsonicResponse { ResponseData = artistsResponseData });
     }
 
@@ -179,7 +186,7 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get details about the Subsonic software license.
     /// </summary>
-    /// <returns>A Subsonic <see cref="LicenseResponseData"/> response.</returns>
+    /// <returns>A Subsonic <see cref="License"/> response.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getLicense")]
@@ -191,11 +198,11 @@ public class SubsonicApiController : ControllerBase
         SubsonicResponse resp;
         if (AuthenticateUser() != null)
         {
-            resp = new SubsonicResponse { ResponseData = new LicenseResponseData() };
+            resp = new SubsonicResponse { ResponseData = new License() };
         }
         else
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
             resp = new SubsonicResponse("failed") { ResponseData = err };
         }
 
@@ -205,7 +212,7 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get a song.
     /// </summary>
-    /// <returns>A subsonic <see cref="Song"/> response.</returns>
+    /// <returns>A subsonic <see cref="Child"/> response.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getSong")]
@@ -215,18 +222,18 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
             return BuildOutput(new SubsonicResponse { ResponseData = err });
         }
 
         var song = _jellyfinHelper.GetSongById(Request.Query["id"]);
         if (song == null)
         {
-            var err = new ErrorResponseData("song not found", ErrorCodes.DataNotFound);
+            var err = new SubsonicError("song not found", ErrorCodes.DataNotFound);
             return BuildOutput(new SubsonicResponse() { ResponseData = err });
         }
 
-        var songResponseData = new SongResponseData(song);
+        var songResponseData = new Child(song);
         return BuildOutput(new SubsonicResponse { ResponseData = songResponseData });
     }
 
@@ -243,18 +250,18 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var folders = _jellyfinHelper.GetFolders(user);
         if (folders == null)
         {
-            var err = new ErrorResponseData("folders not found", ErrorCodes.DataNotFound);
-            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+            var err = new SubsonicError("folders not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var foldersResponseData = new MusicFoldersResponseData(folders);
+        var foldersResponseData = new MusicFolders(folders);
         return BuildOutput(new SubsonicResponse { ResponseData = foldersResponseData });
     }
 
@@ -271,18 +278,18 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var directory = _jellyfinHelper.GetDirectoryById(Request.Query["id"]);
         if (directory == null)
         {
-            var err = new ErrorResponseData("directory not found", ErrorCodes.DataNotFound);
-            return BuildOutput(new SubsonicResponse() { ResponseData = err });
+            var err = new SubsonicError("directory not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var directoryResponseData = new DirectoryResponseData(directory);
+        var directoryResponseData = new Directory(directory);
         return BuildOutput(new SubsonicResponse { ResponseData = directoryResponseData });
     }
 
@@ -300,8 +307,8 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var item = _jellyfinHelper.GetItemById(Request.Query["id"]);
@@ -329,15 +336,15 @@ public class SubsonicApiController : ControllerBase
         var user = AuthenticateUser();
         if (user == null)
         {
-            var err = new ErrorResponseData("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var item = _jellyfinHelper.GetItemById(Request.Query["id"]);
         if (item == null)
         {
-            var err = new ErrorResponseData("item not found", ErrorCodes.DataNotFound);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
+            var err = new SubsonicError("item not found", ErrorCodes.DataNotFound);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
         var fs = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.Read);

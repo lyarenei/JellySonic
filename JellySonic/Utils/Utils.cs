@@ -10,6 +10,12 @@ namespace JellySonic.Utils;
 public static class Utils
 {
     /// <summary>
+    /// ISO date format.
+    /// </summary>
+    /// <returns>ISO date format string.</returns>
+    public const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ssK";
+
+    /// <summary>
     /// Convert ticks to seconds.
     /// </summary>
     /// <param name="ticks">Ticks value.</param>

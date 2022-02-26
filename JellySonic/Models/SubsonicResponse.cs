@@ -6,6 +6,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using JellySonic.Json;
 using JellySonic.Services;
+using JellySonic.Types;
 using MediaBrowser.Model.IO;
 
 namespace JellySonic.Models;
@@ -31,7 +32,6 @@ public class SubsonicResponse
     /// </summary>
     public SubsonicResponse()
     {
-        ResponseData = null;
         Status = "ok";
         Version = ServerVer;
     }
@@ -66,23 +66,23 @@ public class SubsonicResponse
     /// Gets or sets response data.
     /// </summary>
     [XmlIgnore]
-    public ResponseData? ResponseData { get; set; }
+    public IResponseData? ResponseData { get; set; }
 
     /// <summary>
     /// Gets or sets response data for serialization.
     /// </summary>
-    [XmlElement("album", typeof(AlbumResponseData))]
-    [XmlElement("artist", typeof(ArtistResponseData))]
-    [XmlElement("artists", typeof(ArtistsResponseData))]
-    [XmlElement("directory", typeof(DirectoryResponseData))]
-    [XmlElement("error", typeof(ErrorResponseData))]
-    [XmlElement("musicFolders", typeof(MusicFoldersResponseData))]
-    [XmlElement("license", typeof(LicenseResponseData))]
-    [XmlElement("song", typeof(SongResponseData))]
+    [XmlElement("album", typeof(AlbumWithSongsId3))]
+    [XmlElement("artist", typeof(ArtistWithAlbumsId3))]
+    [XmlElement("artists", typeof(ArtistsId3))]
+    [XmlElement("license", typeof(License))]
+    [XmlElement("song", typeof(Child))]
+    [XmlElement("musicFolders", typeof(MusicFolders))]
+    [XmlElement("directory", typeof(Directory))]
+    [XmlElement("error", typeof(SubsonicError))]
     public object? ResponseDataSerialization
     {
         get { return ResponseData; }
-        set { ResponseData = (ResponseData)value!; }
+        set { ResponseData = (IResponseData)value!; }
     }
 
     /// <summary>

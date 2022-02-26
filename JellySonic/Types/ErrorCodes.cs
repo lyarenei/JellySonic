@@ -1,4 +1,4 @@
-namespace JellySonic.Models;
+namespace JellySonic.Types;
 
 /// <summary>
 /// Collection of almost all error codes defined in Subsonic API.
