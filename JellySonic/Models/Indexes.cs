@@ -86,7 +86,7 @@ public class Indexes
     [JsonPropertyName("index")]
     [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<Index> IndexListSurrogate
+    public List<Index> IndexListSerialize
     {
         get { return IndexList.ToList(); }
         set { IndexList = value; }

@@ -54,7 +54,7 @@ public class Index
     [JsonPropertyName("artist")]
     [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<Artist> ArtistsSurrogate
+    public List<Artist> ArtistsSerialize
     {
         get { return Artists.ToList(); }
         set { Artists = value; }
