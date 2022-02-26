@@ -33,6 +33,7 @@ public class SubsonicResponseJsonConverter : JsonConverter<SubsonicResponse>
             { typeof(Genres), "genres" },
         };
 
+        // Root start
         writer.WriteStartObject();
 
         writer.WritePropertyName("subsonic-response");
@@ -47,6 +48,8 @@ public class SubsonicResponseJsonConverter : JsonConverter<SubsonicResponse>
         }
 
         writer.WriteEndObject();
+
+        // Root end
         writer.WriteEndObject();
     }
 }
