@@ -352,4 +352,32 @@ public class SubsonicApiController : ControllerBase
         await fs.ReadAsync(content, CancellationToken.None).ConfigureAwait(false);
         return new FileContentResult(content, Utils.Utils.GetMimeType(item.Path));
     }
+
+    /// <summary>
+    /// Get genres.
+    /// </summary>
+    /// <returns>A Subsonic genres response.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getGenres")]
+    [Route("getGenres.view")]
+    public ActionResult GetGenres()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var artists = _jellyfinHelper.GetArtists(user);
+        if (artists == null)
+        {
+            var err = new SubsonicError("error when retrieving artists", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var genresResponseData = new Genres(artists);
+        return BuildOutput(new SubsonicResponse { ResponseData = genresResponseData });
+    }
 }

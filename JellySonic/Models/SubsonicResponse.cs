@@ -79,6 +79,7 @@ public class SubsonicResponse
     [XmlElement("musicFolders", typeof(MusicFolders))]
     [XmlElement("directory", typeof(Directory))]
     [XmlElement("error", typeof(SubsonicError))]
+    [XmlElement("genres", typeof(Genres))]
     public object? ResponseDataSerialization
     {
         get { return ResponseData; }
