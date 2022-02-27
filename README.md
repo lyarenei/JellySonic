@@ -58,7 +58,7 @@ Any management of the server or user(s) is the responsibility of the Jellyfin se
 | getAlbumList2   | no           | planned              |
 | getRandomSongs  | no           | planned              |
 | getSongsByGenre | no           | planned              |
-| getNowPlaying   | no           | not sure if possible |
+| getNowPlaying   | no           | out of project scope |
 | getStarred      | no           | planned              |
 | getStarred2     | no           | planned              |
 
