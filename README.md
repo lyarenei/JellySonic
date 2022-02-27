@@ -190,13 +190,13 @@ Any management of the server or user(s) is the responsibility of the Jellyfin se
 <details>
   <summary>Bookmarks</summary>
 
-| endpoint       | implemented | notes                |
-|----------------|-------------|----------------------|
-| getBookmarks   | no          | out of current scope |
-| createBookmark | no          | out of current scope |
-| deleteBookmark | no          | out of current scope |
-| getPlayQueue   | no          | out of current scope |
-| savePlayQueue  | no          | out of current scope |
+| endpoint       | implemented | notes            |
+|----------------|-------------|------------------|
+| getBookmarks   | no          | pending decision |
+| createBookmark | no          | pending decision |
+| deleteBookmark | no          | pending decision |
+| getPlayQueue   | no          | pending decision |
+| savePlayQueue  | no          | pending decision |
 
 </details>
 
