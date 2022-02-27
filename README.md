@@ -3,31 +3,212 @@ An **experimental** subsonic plugin for Jellyfin.
 
 This plugin enables your Jellyfin server to serve Subsonic clients.
 
-## Features
-- Implemented endpoints:
-  - download
-  - getArtist
-  - getArtists
-  - getAlbum
-  - getCoverArt
-    - size parameter is not implemented
-  - getLicense
-  - getMusicDirectory
-  - getMusicFolders
-  - getSong
-  - ping
-    - does not require authentication
-      - TBD configurable (per user)
-  - stream
-    - no optional parameters implemented
+## What is implemented
 
-### Known limitations/bugs
+The state of implementation can be found in the tables below.
+Click on each endpoint type reveal the tables.
+If you have found any issues, please check the implementation state before opening an issue.
 
-- Cover arts are not implemented.
-- Song
-  - content type is not implemented
-  - parent attribute is not implemented
-  - artist ID is not implemented
+The current scope is to implement such endpoints to allow clients to provide basic/minimal, but reasonable user experience.
+
+The aim of this plugin is to serve the subsonic clients for music playback.
+Any management of the server or user(s) is the responsibility of the Jellyfin server.
+
+<details>
+  <summary>System</summary>
+
+| endpoint   | implemented | notes |
+|------------|-------------|-------|
+| ping       | yes         |       |
+| getLicense | yes         |       |
+
+</details>
+
+<details>
+  <summary>Browsing</summary>
+
+| endpoint          | implemented | notes                         |
+|-------------------|-------------|-------------------------------|
+| getMusicFolders   | yes         |                               |
+| getIndexes        | no          | planned                       |
+| getMusicDirectory | yes         |                               |
+| getGenres         | yes         |                               |
+| getArtists        | partial     | musicFolderId not implemented |
+| getArtist         | yes         |                               |
+| getAlbum          | yes         |                               |
+| getSong           | yes         |                               |
+| getVideos         | no          | out of project scope          |
+| getVideoInfo      | no          | out of project scope          |
+| getArtistInfo     | no          | planned                       |
+| getArtistInfo2    | no          | planned                       |
+| getAlbumInfo      | no          | planned                       |
+| getAlbumInfo2     | no          | planned                       |
+| getSimilarSongs   | no          | not planned                   |
+| getSimilarSongs2  | no          | not planned                   |
+| getTopSongs       | no          | not planned                   |
+
+</details>
+
+<details>
+  <summary>Album/song lists</summary>
+
+| endpoint        | implemented  | notes                |
+|-----------------|--------------|----------------------|
+| getAlbumList    | no           | planned              |
+| getAlbumList2   | no           | planned              |
+| getRandomSongs  | no           | planned              |
+| getSongsByGenre | no           | planned              |
+| getNowPlaying   | no           | not sure if possible |
+| getStarred      | no           | planned              |
+| getStarred2     | no           | planned              |
+
+</details>
+
+<details>
+  <summary>Searching</summary>
+
+| endpoint | implemented | notes   |
+|----------|-------------|---------|
+| search   | no          | planned |
+| search2  | no          | planned |
+| search3  | no          | planned |
+
+</details>
+
+<details>
+  <summary>Playlists</summary>
+
+| endpoint       | implemented | notes                |
+|----------------|-------------|----------------------|
+| getPlaylists   | no          | out of current scope |
+| getPlaylist    | no          | out of current scope |
+| createPlaylist | no          | out of current scope |
+| updatePlaylist | no          | out of current scope |
+| deletePlaylist | no          | out of current scope |
+
+</details>
+
+<details>
+  <summary>Media retrieval</summary>
+
+| endpoint    | implemented | notes                               |
+|-------------|-------------|-------------------------------------|
+| stream      | partial     | optional parameters not implemented |
+| download    | yes         |                                     |
+| hls         | no          | not planned                         |
+| getCaptions | no          | out of scope                        |
+| getCoverArt | partial     | size parameter not implemented      |
+| getLyrics   | no          | not planned                         |
+| getAvatar   | no          | planned                             |
+
+</details>
+
+<details>
+  <summary>Media annotation</summary>
+
+| endpoint  | implemented | notes            |
+|-----------|-------------|------------------|
+| star      | no          | pending decision |
+| unstar    | no          | pending decision |
+| setRating | no          | pending decision |
+| scrobble  | no          | pending decision |
+
+</details>
+
+<details>
+  <summary>Sharing</summary>
+
+| endpoint     | implemented | notes                |
+|--------------|-------------|----------------------|
+| getShares    | no          | out of current scope |
+| createShares | no          | out of current scope |
+| updateShare  | no          | out of current scope |
+| deleteShare  | no          | out of current scope |
+
+</details>
+
+<details>
+  <summary>Podcast</summary>
+
+| endpoint               | implemented | notes                |
+|------------------------|-------------|----------------------|
+| getPodcasts            | no          | out of current scope |
+| getNewestPodcasts      | no          | out of current scope |
+| refreshPodcasts        | no          | out of current scope |
+| createPodcastChannel   | no          | out of current scope |
+| deletePodcastChannel   | no          | out of current scope |
+| deletePodcastEpisode   | no          | out of current scope |
+| downloadPodcastEpisode | no          | out of current scope |
+
+</details>
+
+<details>
+  <summary>Jukebox</summary>
+
+| endpoint       | implemented | notes                       |
+|----------------|-------------|-----------------------------|
+| jukeboxControl | no          | no such feature in Jellyfin |
+
+</details>
+
+<details>
+  <summary>System</summary>
+
+| endpoint                   | implemented | notes                       |
+|----------------------------|-------------|-----------------------------|
+| getInternetRadioStations   | no          | no such feature in Jellyfin |
+| createInternetRadioStation | no          | no such feature in Jellyfin |
+| updateInternetRadioStation | no          | no such feature in Jellyfin |
+| deleteInternetRadioStation | no          | no such feature in Jellyfin |
+
+</details>
+
+<details>
+  <summary>Chat</summary>
+
+| endpoint        | implemented | notes                       |
+|-----------------|-------------|-----------------------------|
+| getChatMessages | no          | no such feature in Jellyfin |
+| addChatMessage  | no          | no such feature in Jellyfin |
+
+</details>
+
+<details>
+  <summary>User management</summary>
+
+| endpoint       | implemented | notes                |
+|----------------|-------------|----------------------|
+| getUser        | no          | planned              |
+| getUsers       | no          | out of project scope |
+| createUser     | no          | out of project scope |
+| updateUser     | no          | out of project scope |
+| deleteUser     | no          | out of project scope |
+| changePassword | no          | out of project scope |
+
+</details>
+
+<details>
+  <summary>Bookmarks</summary>
+
+| endpoint       | implemented | notes                |
+|----------------|-------------|----------------------|
+| getBookmarks   | no          | out of current scope |
+| createBookmark | no          | out of current scope |
+| deleteBookmark | no          | out of current scope |
+| getPlayQueue   | no          | out of current scope |
+| savePlayQueue  | no          | out of current scope |
+
+</details>
+
+<details>
+  <summary>Media library scanning</summary>
+
+| endpoint      | implemented | notes                |
+|---------------|-------------|----------------------|
+| getScanStatus | no          | out of project scope |
+| startScan     | no          | out of project scope |
+
+</details>
 
 # Installation
 
