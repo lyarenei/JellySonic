@@ -120,10 +120,10 @@ Any management of the server or user(s) is the responsibility of the Jellyfin se
 
 | endpoint     | implemented | notes                |
 |--------------|-------------|----------------------|
-| getShares    | no          | out of current scope |
-| createShares | no          | out of current scope |
-| updateShare  | no          | out of current scope |
-| deleteShare  | no          | out of current scope |
+| getShares    | no          | out of project scope |
+| createShares | no          | out of project scope |
+| updateShare  | no          | out of project scope |
+| deleteShare  | no          | out of project scope |
 
 </details>
 
