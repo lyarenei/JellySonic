@@ -31,6 +31,7 @@ public class SubsonicResponseJsonConverter : JsonConverter<SubsonicResponse>
             { typeof(Directory), "directory" },
             { typeof(SubsonicError), "error" },
             { typeof(Genres), "genres" },
+            { typeof(Indexes), "indexes" },
         };
 
         // Root start

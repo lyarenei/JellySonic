@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using JellySonic.Types;
 using MediaBrowser.Controller.Entities;
 
 namespace JellySonic.Models;
@@ -6,7 +7,7 @@ namespace JellySonic.Models;
 /// <summary>
 /// Subsonic Artist data type.
 /// </summary>
-public class Artist
+public class Artist : IIndexItem
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Artist"/> class.

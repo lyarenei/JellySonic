@@ -380,4 +380,27 @@ public class SubsonicApiController : ControllerBase
         var genresResponseData = new Genres(artists);
         return BuildOutput(new SubsonicResponse { ResponseData = genresResponseData });
     }
+
+    /// <summary>
+    /// Get indexes.
+    /// </summary>
+    /// <returns>A Subsonic indexes response.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getIndexes")]
+    [Route("getIndexes.view")]
+    public ActionResult GetIndexes()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        // TODO fetch and process real data
+
+        var indexesResponseData = new Indexes();
+        return BuildOutput(new SubsonicResponse { ResponseData = indexesResponseData });
+    }
 }

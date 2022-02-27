@@ -30,7 +30,7 @@ Any management of the server or user(s) is the responsibility of the Jellyfin se
 | endpoint          | implemented | notes                         |
 |-------------------|-------------|-------------------------------|
 | getMusicFolders   | yes         |                               |
-| getIndexes        | no          | planned                       |
+| getIndexes        | no          | in progress                   |
 | getMusicDirectory | yes         |                               |
 | getGenres         | yes         |                               |
 | getArtists        | partial     | musicFolderId not implemented |

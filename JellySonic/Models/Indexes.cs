@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
+using JellySonic.Types;
 using MediaBrowser.Controller.Entities;
 
 namespace JellySonic.Models;
@@ -15,23 +16,16 @@ namespace JellySonic.Models;
 /// </summary>
 [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "XML serialization")]
 [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "XML serialization")]
-public class Indexes
+public class Indexes : IResponseData
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Indexes"/> class.
     /// </summary>
     public Indexes()
     {
-        /* todo: IndexList can contain multiple types
-         <xs:sequence>
-            <xs:element name="shortcut" type="sub:Artist" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="index" type="sub:Index" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="child" type="sub:Child" minOccurs="0" maxOccurs="unbounded"/> <!-- Added in 1.7.0 -->
-        </xs:sequence>
-        */
         LastModified = DateTime.Now.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
         IgnoredArticles = string.Empty;
-        IndexList = new List<Index>();
+        IndexList = new List<IIndexItem>();
     }
 
     /// <summary>
@@ -40,6 +34,7 @@ public class Indexes
     /// <param name="artists">List of items from query.</param>
     public Indexes(IEnumerable<BaseItem> artists)
     {
+        // TODO this is incorrect implementation
         LastModified = DateTime.Now.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
         IgnoredArticles = string.Empty;
         var artistIndex = new List<Index>();
@@ -76,19 +71,20 @@ public class Indexes
     /// </summary>
     [XmlIgnore]
     [JsonIgnore]
-    public IEnumerable<Index> IndexList { get; set; }
+    public IEnumerable<IIndexItem> IndexList { get; set; }
 
     /// <summary>
     /// Gets or sets index of indexes used for serialization.
     /// <seealso cref="IndexList"/>
     /// </summary>
-    [XmlElement("index")]
-    [JsonPropertyName("index")]
+    [XmlElement("shortcut", typeof(Artist))]
+    [XmlElement("index", typeof(Index))]
+    [XmlElement("child", typeof(Child))]
     [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<Index> IndexListSerialize
+    public List<object> IndexListSerialize
     {
-        get { return IndexList.ToList(); }
-        set { IndexList = value; }
+        get { return IndexList.Cast<object>().ToList(); }
+        set { IndexList = value.Cast<IIndexItem>(); }
     }
 }

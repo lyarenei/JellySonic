@@ -12,7 +12,7 @@ namespace JellySonic.Models;
 /// <summary>
 /// Subsonic Child data type.
 /// </summary>
-public class Child : IResponseData
+public class Child : IResponseData, IIndexItem
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Child"/> class.
