@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ using JellySonic.Models;
 using JellySonic.Services;
 using JellySonic.Types;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -414,11 +416,55 @@ public class SubsonicApiController : ControllerBase
     [Route("getAlbumList.view")]
     public ActionResult GetAlbumList()
     {
+        var (albums, error) = GetAlbumsOrError();
+        if (error != null)
+        {
+            return error;
+        }
+
+        if (albums == null)
+        {
+            var err = new SubsonicError("error when retrieving albums", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var albumListResponseData = new AlbumList(albums);
+        return BuildOutput(new SubsonicResponse { ResponseData = albumListResponseData });
+    }
+
+    /// <summary>
+    /// Get album list (ID3 tags version).
+    /// </summary>
+    /// <returns>A Subsonic album list 2 response.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getAlbumList2")]
+    [Route("getAlbumList2.view")]
+    public ActionResult GetAlbumList2()
+    {
+        var (albums, error) = GetAlbumsOrError();
+        if (error != null)
+        {
+            return error;
+        }
+
+        if (albums == null)
+        {
+            var err = new SubsonicError("error when retrieving albums", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var albumListResponseData = new AlbumList2(albums);
+        return BuildOutput(new SubsonicResponse { ResponseData = albumListResponseData });
+    }
+
+    private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError()
+    {
         var user = AuthenticateUser();
         if (user == null)
         {
             var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+            return (null, BuildOutput(new SubsonicResponse("failed") { ResponseData = err }));
         }
 
         string type = Request.Query["type"];
@@ -442,14 +488,14 @@ public class SubsonicApiController : ControllerBase
             {
                 _logger.LogWarning("Failed to parse fromYear as a number");
                 var err = new SubsonicError("invalid fromYear parameter value", ErrorCodes.Generic);
-                return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+                return (null, BuildOutput(new SubsonicResponse("failed") { ResponseData = err }));
             }
 
             if (!int.TryParse(Request.Query["toYear"], out var tYear))
             {
                 _logger.LogWarning("Failed to parse toYear as a number");
                 var err = new SubsonicError("invalid toYear parameter value", ErrorCodes.Generic);
-                return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+                return (null, BuildOutput(new SubsonicResponse("failed") { ResponseData = err }));
             }
 
             fromYear = fYear;
@@ -464,18 +510,11 @@ public class SubsonicApiController : ControllerBase
             {
                 _logger.LogWarning("Genre parameter must be set if type parameter is set to byGenre");
                 var err = new SubsonicError("genre parameter not set", ErrorCodes.MissingParam);
-                return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+                return (null, BuildOutput(new SubsonicResponse("failed") { ResponseData = err }));
             }
         }
 
         var albums = _jellyfinHelper.GetAlbums(user, type, size, offset, fromYear, toYear, genre);
-        if (albums == null)
-        {
-            var err = new SubsonicError("error when retrieving albums", ErrorCodes.Generic);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var albumListResponseData = new AlbumList(albums);
-        return BuildOutput(new SubsonicResponse { ResponseData = albumListResponseData });
+        return (albums, null);
     }
 }
