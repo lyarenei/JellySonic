@@ -434,7 +434,41 @@ public class SubsonicApiController : ControllerBase
             offset = 0;
         }
 
-        var albums = _jellyfinHelper.GetAlbums(user, type, size, offset);
+        int? fromYear = null;
+        int? toYear = null;
+        if (Request.Query["type"] == "byYear")
+        {
+            if (!int.TryParse(Request.Query["fromYear"], out var fYear))
+            {
+                _logger.LogWarning("Failed to parse fromYear as a number");
+                var err = new SubsonicError("invalid fromYear parameter value", ErrorCodes.Generic);
+                return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+            }
+
+            if (!int.TryParse(Request.Query["toYear"], out var tYear))
+            {
+                _logger.LogWarning("Failed to parse toYear as a number");
+                var err = new SubsonicError("invalid toYear parameter value", ErrorCodes.Generic);
+                return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+            }
+
+            fromYear = fYear;
+            toYear = tYear;
+        }
+
+        string? genre = null;
+        if (Request.Query["type"] == "byGenre")
+        {
+            genre = Request.Query["genre"];
+            if (string.IsNullOrEmpty(genre))
+            {
+                _logger.LogWarning("Genre parameter must be set if type parameter is set to byGenre");
+                var err = new SubsonicError("genre parameter not set", ErrorCodes.MissingParam);
+                return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+            }
+        }
+
+        var albums = _jellyfinHelper.GetAlbums(user, type, size, offset, fromYear, toYear, genre);
         if (albums == null)
         {
             var err = new SubsonicError("error when retrieving albums", ErrorCodes.Generic);

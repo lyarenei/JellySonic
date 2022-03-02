@@ -216,31 +216,97 @@ public class JellyfinHelper
     /// <param name="type">Query type.</param>
     /// <param name="size">Query result size. Default 10.</param>
     /// <param name="offset">Query result offset. Default 0.</param>
+    /// <param name="fromYear">Include only albums released in specified year and until year specified in <paramref name="toYear"/>.
+    /// Must not be null and has effect only if <paramref name="type"/> is set to byYear.</param>
+    /// <param name="toYear">Include only albums released in specified year and earlier until year specified in <paramref name="fromYear"/>.
+    /// Must not be null and has effect only if <paramref name="type"/> is set to byYear.</param>
+    /// <param name="genre">Include only albums of specified genre. Has effect only if <paramref name="type"/> is set to byGenre.</param>
     /// <returns>A collection of items. Null if error.</returns>
-    public IEnumerable<BaseItem>? GetAlbums(User user, string type, int size = 10, int offset = 0)
+    public IEnumerable<BaseItem>? GetAlbums(
+        User user,
+        string type,
+        int size = 10,
+        int offset = 0,
+        int? fromYear = null,
+        int? toYear = null,
+        string? genre = null)
     {
+        string sortBy;
+        SortOrder sortOrder = SortOrder.Ascending;
+        bool? isLikedOrFav = type == "starred" ? true : null;
+        int[]? years = null;
         switch (type)
         {
+            case "random":
+                sortBy = ItemSortBy.Random;
+                break;
+            case "newest":
+                sortBy = ItemSortBy.PremiereDate;
+                sortOrder = SortOrder.Descending;
+                break;
+            case "highest":
+                sortBy = ItemSortBy.OfficialRating;
+                sortOrder = SortOrder.Descending;
+                break;
+            case "recent":
+                sortBy = ItemSortBy.DateCreated;
+                sortOrder = SortOrder.Descending;
+                break;
             case "alphabeticalByName":
-                return GetAlbumsAlphabeticalByName(user, size, offset);
+            case "starred":
+            case "byGenre":
+                sortBy = ItemSortBy.SortName;
+                break;
+            case "alphabeticalByArtist":
+                sortBy = ItemSortBy.AlbumArtist;
+                break;
+            case "byYear":
+                sortBy = ItemSortBy.ProductionYear;
+                sortOrder = fromYear <= toYear ? SortOrder.Ascending : SortOrder.Descending;
+                int start = fromYear <= toYear ? fromYear!.Value : toYear!.Value;
+                int end = fromYear <= toYear ? toYear!.Value : fromYear!.Value;
+                years = Enumerable.Range(start, end - start).ToArray();
+                break;
             default:
                 _logger.LogWarning("Requested album list of type '{QueryType}', but this type is not valid or implemented", type);
                 return new List<BaseItem>();
         }
+
+        return GetAlbumsByParams(user, sortBy, sortOrder, size, offset, isLikedOrFav, years, genre);
     }
 
-    private IEnumerable<BaseItem>? GetAlbumsAlphabeticalByName(User user, int size, int offset)
+    private IEnumerable<BaseItem>? GetAlbumsByParams(
+        User user,
+        string sortBy,
+        SortOrder sortOrder = SortOrder.Ascending,
+        int size = 10,
+        int offset = 0,
+        bool? isLikedOrFav = null,
+        int[]? years = null,
+        string? genre = null)
     {
-        var query = new InternalItemsQuery
+        var query = new InternalItemsQuery(user)
         {
             IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
-            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+            OrderBy = new (string, SortOrder)[] { (sortBy, sortOrder) },
             Recursive = true,
             Limit = size,
             StartIndex = offset
         };
 
-        query.SetUser(user);
+        if (isLikedOrFav != null)
+        {
+            query.IsFavoriteOrLiked = isLikedOrFav.Value;
+        }
+        else if (years != null)
+        {
+            query.Years = years;
+        }
+        else if (string.IsNullOrEmpty(genre))
+        {
+            query.Genres = new[] { genre! };
+        }
+
         var queryData = _libraryManager.GetItemList(query);
         return queryData?.ToList();
     }
