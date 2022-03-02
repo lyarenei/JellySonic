@@ -52,15 +52,15 @@ Any management of the server or user(s) is the responsibility of the Jellyfin se
 <details>
   <summary>Album/song lists</summary>
 
-| endpoint        | implemented  | notes                |
-|-----------------|--------------|----------------------|
-| getAlbumList    | no           | planned              |
-| getAlbumList2   | no           | planned              |
-| getRandomSongs  | no           | planned              |
-| getSongsByGenre | no           | planned              |
-| getNowPlaying   | no           | out of project scope |
-| getStarred      | no           | planned              |
-| getStarred2     | no           | planned              |
+| endpoint        | implemented | notes                                             |
+|-----------------|-------------|---------------------------------------------------|
+| getAlbumList    | partial     | WIP - not all types or parameters are implemented |
+| getAlbumList2   | no          | planned                                           |
+| getRandomSongs  | no          | planned                                           |
+| getSongsByGenre | no          | planned                                           |
+| getNowPlaying   | no          | out of project scope                              |
+| getStarred      | no          | planned                                           |
+| getStarred2     | no          | planned                                           |
 
 </details>
 

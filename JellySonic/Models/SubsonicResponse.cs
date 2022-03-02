@@ -81,6 +81,7 @@ public class SubsonicResponse
     [XmlElement("error", typeof(SubsonicError))]
     [XmlElement("genres", typeof(Genres))]
     [XmlElement("indexes", typeof(Indexes))]
+    [XmlElement("albumList", typeof(AlbumList))]
     public object? ResponseDataSerialization
     {
         get { return ResponseData; }

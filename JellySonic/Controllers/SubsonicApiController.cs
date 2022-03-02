@@ -403,4 +403,45 @@ public class SubsonicApiController : ControllerBase
         var indexesResponseData = new Indexes();
         return BuildOutput(new SubsonicResponse { ResponseData = indexesResponseData });
     }
+
+    /// <summary>
+    /// Get album list.
+    /// </summary>
+    /// <returns>A Subsonic album list response.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getAlbumList")]
+    [Route("getAlbumList.view")]
+    public ActionResult GetAlbumList()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        string type = Request.Query["type"];
+        if (!int.TryParse(Request.Query["size"], out var size))
+        {
+            _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
+            size = 10;
+        }
+
+        if (!int.TryParse(Request.Query["offset"], out var offset))
+        {
+            _logger.LogWarning("Failed to parse offset as a number, will use default value");
+            offset = 0;
+        }
+
+        var albums = _jellyfinHelper.GetAlbums(user, type, size, offset);
+        if (albums == null)
+        {
+            var err = new SubsonicError("error when retrieving albums", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var albumListResponseData = new AlbumList(albums);
+        return BuildOutput(new SubsonicResponse { ResponseData = albumListResponseData });
+    }
 }

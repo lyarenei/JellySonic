@@ -208,4 +208,40 @@ public class JellyfinHelper
     {
         return _libraryManager.GetItemById(itemId);
     }
+
+    /// <summary>
+    /// Get albums with specified query params.
+    /// </summary>
+    /// <param name="user">User performing the query.</param>
+    /// <param name="type">Query type.</param>
+    /// <param name="size">Query result size. Default 10.</param>
+    /// <param name="offset">Query result offset. Default 0.</param>
+    /// <returns>A collection of items. Null if error.</returns>
+    public IEnumerable<BaseItem>? GetAlbums(User user, string type, int size = 10, int offset = 0)
+    {
+        switch (type)
+        {
+            case "alphabeticalByName":
+                return GetAlbumsAlphabeticalByName(user, size, offset);
+            default:
+                _logger.LogWarning("Requested album list of type '{QueryType}', but this type is not valid or implemented", type);
+                return new List<BaseItem>();
+        }
+    }
+
+    private IEnumerable<BaseItem>? GetAlbumsAlphabeticalByName(User user, int size, int offset)
+    {
+        var query = new InternalItemsQuery
+        {
+            IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
+            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+            Recursive = true,
+            Limit = size,
+            StartIndex = offset
+        };
+
+        query.SetUser(user);
+        var queryData = _libraryManager.GetItemList(query);
+        return queryData?.ToList();
+    }
 }
