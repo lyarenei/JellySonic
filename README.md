@@ -67,11 +67,11 @@ Any management of the server or user(s) is the responsibility of the Jellyfin se
 <details>
   <summary>Searching</summary>
 
-| endpoint | implemented | notes   |
-|----------|-------------|---------|
-| search   | no          | planned |
-| search2  | no          | planned |
-| search3  | no          | planned |
+| endpoint | implemented | notes                                            |
+|----------|-------------|--------------------------------------------------|
+| search   | no          | not planned - marked as deprecated in API schema |
+| search2  | no          | planned                                          |
+| search3  | no          | planned                                          |
 
 </details>
 
