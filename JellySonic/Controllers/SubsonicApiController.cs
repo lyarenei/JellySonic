@@ -461,12 +461,14 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get items matching a search query.
     /// </summary>
-    /// <returns>A Subsonic search result 2 response.</returns>
+    /// <returns>A Subsonic search result 2 or 3 response.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("search2")]
     [Route("search2.view")]
-    public ActionResult Search2()
+    [Route("search3")]
+    [Route("search3.view")]
+    public ActionResult Search()
     {
         var artists = PerformSearch("artists");
         if (artists == null)
@@ -489,7 +491,16 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var searchResponseData = new SearchResult2(artists, albums, songs);
+        IResponseData searchResponseData;
+        if (Request.Path.ToUriComponent().Contains("search2", StringComparison.InvariantCulture))
+        {
+            searchResponseData = new SearchResult2(artists, albums, songs);
+        }
+        else
+        {
+            searchResponseData = new SearchResult3(artists, albums, songs);
+        }
+
         return BuildOutput(new SubsonicResponse { ResponseData = searchResponseData });
     }
 
