@@ -458,6 +458,41 @@ public class SubsonicApiController : ControllerBase
         return BuildOutput(new SubsonicResponse { ResponseData = albumListResponseData });
     }
 
+    /// <summary>
+    /// Get items matching a search query.
+    /// </summary>
+    /// <returns>A Subsonic search result 2 response.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("search2")]
+    [Route("search2.view")]
+    public ActionResult Search2()
+    {
+        var artists = PerformSearch("artists");
+        if (artists == null)
+        {
+            var err = new SubsonicError("error when retrieving artists", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var albums = PerformSearch("albums");
+        if (albums == null)
+        {
+            var err = new SubsonicError("error when retrieving albums", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var songs = PerformSearch("songs");
+        if (songs == null)
+        {
+            var err = new SubsonicError("error when retrieving songs", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var searchResponseData = new SearchResult2(artists, albums, songs);
+        return BuildOutput(new SubsonicResponse { ResponseData = searchResponseData });
+    }
+
     private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError()
     {
         var user = AuthenticateUser();
@@ -516,5 +551,63 @@ public class SubsonicApiController : ControllerBase
 
         var albums = _jellyfinHelper.GetAlbums(user, type, size, offset, fromYear, toYear, genre);
         return (albums, null);
+    }
+
+    private IEnumerable<BaseItem>? PerformSearch(string searchType)
+    {
+        var query = Request.Query["query"];
+        if (searchType == "artists")
+        {
+            if (!int.TryParse(Request.Query["artistCount"], out var artistCount))
+            {
+                _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
+                artistCount = 20;
+            }
+
+            if (!int.TryParse(Request.Query["artistOffset"], out var artistOffset))
+            {
+                _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
+                artistOffset = 0;
+            }
+
+            return _jellyfinHelper.Search("artists", query, artistCount, artistCount);
+        }
+
+        if (searchType == "albums")
+        {
+            if (!int.TryParse(Request.Query["albumCount"], out var albumCount))
+            {
+                _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
+                albumCount = 20;
+            }
+
+            if (!int.TryParse(Request.Query["albumOffset"], out var albumOffset))
+            {
+                _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
+                albumOffset = 0;
+            }
+
+            return _jellyfinHelper.Search("albums", query, albumCount, albumOffset);
+        }
+
+        if (searchType == "songs")
+        {
+            if (!int.TryParse(Request.Query["songCount"], out var songCount))
+            {
+                _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
+                songCount = 10;
+            }
+
+            if (!int.TryParse(Request.Query["songOffset"], out var songOffset))
+            {
+                _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
+                songOffset = 0;
+            }
+
+            return _jellyfinHelper.Search("songs", query, songCount, songOffset);
+        }
+
+        _logger.LogDebug("Invalid search type specified");
+        return null;
     }
 }

@@ -275,6 +275,36 @@ public class JellyfinHelper
         return GetAlbumsByParams(user, sortBy, sortOrder, size, offset, isLikedOrFav, years, genre);
     }
 
+    /// <summary>
+    /// Performs a search according to specified query.
+    /// </summary>
+    /// <param name="searchType">Type of search - artists, albums, songs.</param>
+    /// <param name="query">Search query.</param>
+    /// <param name="count">Search result count. Default 20.</param>
+    /// <param name="offset">Search result offset. Default 0.</param>
+    /// <returns>A collection of items matching the query.</returns>
+    public IEnumerable<BaseItem>? Search(string searchType, string query, int count = 20, int offset = 0)
+    {
+        BaseItemKind searchItem;
+        switch (searchType)
+        {
+            case "artists":
+                searchItem = BaseItemKind.MusicArtist;
+                break;
+            case "albums":
+                searchItem = BaseItemKind.MusicAlbum;
+                break;
+            case "songs":
+                searchItem = BaseItemKind.Audio;
+                break;
+            default:
+                _logger.LogWarning("Invalid search type '{SearchType}'", searchType);
+                return new List<BaseItem>();
+        }
+
+        return DoSearch(searchItem, query, count, offset);
+    }
+
     private IEnumerable<BaseItem>? GetAlbumsByParams(
         User user,
         string sortBy,
@@ -309,5 +339,21 @@ public class JellyfinHelper
 
         var queryData = _libraryManager.GetItemList(query);
         return queryData?.ToList();
+    }
+
+    private IEnumerable<BaseItem>? DoSearch(BaseItemKind searchItem, string queryString, int count, int offset)
+    {
+        var query = new InternalItemsQuery
+        {
+            NameContains = queryString,
+            IncludeItemTypes = new[] { searchItem },
+            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+            Recursive = true,
+            Limit = count,
+            StartIndex = offset,
+            MinSimilarityScore = 20
+        };
+
+        return _libraryManager.GetItemList(query);
     }
 }

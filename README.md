@@ -70,7 +70,7 @@ Any management of the server or user(s) is the responsibility of the Jellyfin se
 | endpoint | implemented | notes                                            |
 |----------|-------------|--------------------------------------------------|
 | search   | no          | not planned - marked as deprecated in API schema |
-| search2  | no          | planned                                          |
+| search2  | partial     | musicFolderId parameter not implemented          |
 | search3  | no          | planned                                          |
 
 </details>

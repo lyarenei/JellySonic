@@ -34,6 +34,7 @@ public class SubsonicResponseJsonConverter : JsonConverter<SubsonicResponse>
             { typeof(Indexes), "indexes" },
             { typeof(AlbumList), "albumList" },
             { typeof(AlbumList2), "albumList2" },
+            { typeof(SearchResult2), "searchResult2" },
         };
 
         // Root start
