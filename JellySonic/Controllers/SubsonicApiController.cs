@@ -409,11 +409,13 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get album list.
     /// </summary>
-    /// <returns>A Subsonic album list response.</returns>
+    /// <returns>A Subsonic album list or album list 2 response.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getAlbumList")]
     [Route("getAlbumList.view")]
+    [Route("getAlbumList2")]
+    [Route("getAlbumList2.view")]
     public ActionResult GetAlbumList()
     {
         var (albums, error) = GetAlbumsOrError();
@@ -428,33 +430,16 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var albumListResponseData = new AlbumList(albums);
-        return BuildOutput(new SubsonicResponse { ResponseData = albumListResponseData });
-    }
-
-    /// <summary>
-    /// Get album list (ID3 tags version).
-    /// </summary>
-    /// <returns>A Subsonic album list 2 response.</returns>
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getAlbumList2")]
-    [Route("getAlbumList2.view")]
-    public ActionResult GetAlbumList2()
-    {
-        var (albums, error) = GetAlbumsOrError();
-        if (error != null)
+        IResponseData albumListResponseData;
+        if (Request.Path.ToUriComponent().Contains("getAlbumList2", StringComparison.InvariantCulture))
         {
-            return error;
+            albumListResponseData = new AlbumList2(albums);
+        }
+        else
+        {
+            albumListResponseData = new AlbumList(albums);
         }
 
-        if (albums == null)
-        {
-            var err = new SubsonicError("error when retrieving albums", ErrorCodes.Generic);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var albumListResponseData = new AlbumList2(albums);
         return BuildOutput(new SubsonicResponse { ResponseData = albumListResponseData });
     }
 
