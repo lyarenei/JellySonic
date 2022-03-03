@@ -570,7 +570,7 @@ public class SubsonicApiController : ControllerBase
                 artistOffset = 0;
             }
 
-            return _jellyfinHelper.Search("artists", query, artistCount, artistCount);
+            return _jellyfinHelper.Search("artists", query, artistCount, artistOffset);
         }
 
         if (searchType == "albums")
