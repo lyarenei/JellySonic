@@ -1,6 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace JellySonic.Utils;
 
@@ -52,5 +55,23 @@ public static class Utils
     {
         var bytes = Convert.FromHexString(hexString);
         return bytes.Aggregate(string.Empty, (current, b) => current + (char)b);
+    }
+
+    /// <summary>
+    /// Computes a md5 hash of input value.
+    /// </summary>
+    /// <param name="input">Value to hash.</param>
+    /// <returns>Hash of input. Null if error.</returns>
+    [SuppressMessage("Security", "CA5351:Do Not Use Broken Cryptographic Algorithms", Justification = "Subsonic authentication.")]
+    public static string Md5Hash(string input)
+    {
+        // From https://stackoverflow.com/a/24031467
+        using (var md5 = MD5.Create())
+        {
+            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+            byte[] hashBytes = md5.ComputeHash(inputBytes);
+            return BitConverter.ToString(hashBytes)
+                .Replace("-", string.Empty, StringComparison.InvariantCulture);
+        }
     }
 }

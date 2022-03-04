@@ -62,6 +62,16 @@ public class JellyfinHelper
     }
 
     /// <summary>
+    /// Get user by their username.
+    /// </summary>
+    /// <param name="username">Username of the user.</param>
+    /// <returns>User.</returns>
+    public User GetUserByUsername(string username)
+    {
+        return _userManager.GetUserByName(username);
+    }
+
+    /// <summary>
     /// Get album by specified ID.
     /// </summary>
     /// <param name="albumId">IF of the album.</param>

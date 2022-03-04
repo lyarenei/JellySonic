@@ -49,15 +49,45 @@ public class SubsonicApiController : ControllerBase
     public User? AuthenticateUser()
     {
         string username = Request.Query["u"];
-        string password = Request.Query["p"];
-        string endpoint = HttpContext.GetNormalizedRemoteIp().ToString();
+        var user = _jellyfinHelper.GetUserByUsername(username);
 
+        var jsUser = JellySonic.Instance?.Configuration.Users
+            .FirstOrDefault(u => u.JellyfinUserId == user.Id);
+
+        if (jsUser != null && jsUser.Options.TokenAuthEnabled)
+        {
+            if (string.IsNullOrEmpty(jsUser.Password))
+            {
+                _logger.LogWarning(
+                    "({Username}) Password is not set for token authentication " +
+                    "- either set a password or disable token authentication",
+                    username);
+                return null;
+            }
+
+            var token = Request.Query["t"];
+            var salt = Request.Query["s"];
+            return PerformTokenAuth(jsUser.Password, token, salt) ? user : null;
+        }
+
+        return PerformPasswordAuth(username, Request.Query["p"]) ? user : null;
+    }
+
+    private bool PerformPasswordAuth(string username, string password)
+    {
+        string endpoint = HttpContext.GetNormalizedRemoteIp().ToString();
         if (password.Contains("enc:", StringComparison.InvariantCulture))
         {
             password = Utils.Utils.HexToAscii(password[4..]);
         }
 
-        return _jellyfinHelper.AuthenticateUser(username, password, endpoint);
+        return _jellyfinHelper.AuthenticateUser(username, password, endpoint) != null;
+    }
+
+    private static bool PerformTokenAuth(string password, string token, string salt)
+    {
+        var computedToken = Utils.Utils.Md5Hash(password + salt).ToLower(CultureInfo.InvariantCulture);
+        return computedToken == token.ToLower(CultureInfo.InvariantCulture);
     }
 
     /// <summary>

@@ -45,7 +45,7 @@ public class JellySonicUserOptions
     /// </summary>
     public JellySonicUserOptions()
     {
-        TokenAuthEnabled = false;
+        TokenAuthEnabled = true;
     }
 
     /// <summary>

@@ -3,9 +3,53 @@ An **experimental** subsonic plugin for Jellyfin.
 
 This plugin enables your Jellyfin server to serve Subsonic clients.
 
-## What is implemented
+### A note about token authentication
+This plugin supports token authentication, which was introduced in Subsonic API v1.13.0.
+This should be the preferred method of authentication and so it is enabled by default.
+However, this method only secures the password in transit, not on the server side,
+as the server needs an access to a plaintext password, so it can compute the token for authentication.
 
-### Endpoints
+To lessen the risk of "unauthorized" access using possibly leaked passwords,
+the plugin needs another password for the token authentication.
+This password is stored as **PLAINTEXT** (not encoded, can be read as-is) and therefore setting this password
+to the same password you use to access Jellyfin server is discouraged.
+That way, in the event of a leak, the "unauthorized" access scope is limited only
+to interaction with Jellyfin sever via Subsonic API.
+
+The server administrator needs to set up the token authentication for their users.
+Jellyfin plugins cannot implement user-facing plugin configurations (or at least I don't know about any solutions).
+To configure the token authentication, refer to [config](#configuration) section below.
+
+## Installation
+
+The plugin can be installed either via repository or [manually](#manual-build-and-installation).
+
+After installation, do not forget to configure the plugin as mentioned in the note above.
+
+### Repo Install
+
+Jellyfin 10.6.0 introduced 3rd party plugin repositories (see: [announcement](https://jellyfin.org/posts/plugin-updates/)), configure the following to follow stable builds for this plugin:
+
+- Repo name: JellySonic (or whatever, can be anything)
+- Repo URL: `https://raw.githubusercontent.com/lyarenei/JellySonic/master/manifest.json`
+
+After you add the repository, you should be able to see a JellySonic plugin in the catalog.
+Install your preferred version and restart the server as asked.
+
+### Configuration
+
+Currently, the plugin allows configuration of Subsonic token authentication.
+To configure a user:
+1. Open plugin settings
+2. Select the user you want to configure
+3. Set a password for the authentication
+4. Enable token authentication
+
+After saving the configuration, do not forget to reconfigure the Subsonic client
+to use token authentication and change the password to the one you set in the plugin configuration.
+
+
+## Implemented Endpoints
 The state of endpoints implementation can be found in the tables below.
 Click on each endpoint type reveal the tables.
 If you have found any issues, please check the implementation state before opening an issue.
@@ -211,28 +255,11 @@ Any management of the libraries, server or user(s) is the responsibility of the 
 
 </details>
 
-# Installation
-
-The plugin can be installed either via repository or [manually](#manual-build-and-installation)
-
-## Repo Install
-
-Jellyfin 10.6.0 introduces 3rd party plugin repositories (see: [announcement](https://jellyfin.org/posts/plugin-updates/)), configure the following to follow stable builds for this plugin
-
-- Repo name: JellySonic (or whatever, can be anything)
-- Repo URL: `https://raw.githubusercontent.com/lyarenei/JellySonic/master/manifest.json`
-
-After you add the repository, you should be able to see a JellySonic plugin in the catalog.
-Install your preferred version and restart the server as asked.
-
-## Configuration
-
-TBD
 
 # Manual build and installation
 
 .NET 6.0 is required to build the JellySonic plugin.
-To install the .NET SDK on Linux or macOS, see the download page at https://dotnet.microsoft.com/download.
+To install the .NET SDK on Linux or macOS, check out the download page at https://dotnet.microsoft.com/download.
 Native package manager instructions can be found for Debian, RHEL, Ubuntu, Fedora, SLES, and CentOS.
 
 Once the SDK is installed, run the following.
