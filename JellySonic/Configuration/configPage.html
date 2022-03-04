@@ -5,32 +5,24 @@
     <title>Template</title>
 </head>
 <body>
-    <div id="TemplateConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+    <div id="JellySonicConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
         <div data-role="content">
             <div class="content-primary">
-                <form id="TemplateConfigForm">
+                <form id="JellySonicConfigForm">
                     <div class="selectContainer">
-                        <label class="selectLabel" for="Options">Several Options</label>
-                        <select is="emby-select" id="Options" name="Options" class="emby-select-withcolor emby-select">
-                            <option id="optOneOption" value="OneOption">One Option</option>
-                            <option id="optAnotherOption" value="AnotherOption">Another Option</option>
-                        </select>
+                        <label class="selectLabel" for="User">Configure JellySonic for:</label>
+                        <select is="emby-select" id="User" name="User"></select>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="AnInteger">An Integer</label>
-                        <input id="AnInteger" name="AnInteger" type="number" is="emby-input" min="0" />
-                        <div class="fieldDescription">A Description</div>
+                        <label class="inputLabel inputLabelUnfocused" for="Password">Password</label>
+                        <input id="Password" name="Password" type="password" is="emby-input" min="0" />
+                        <div class="fieldDescription">Password used for Subsonic token authentication. !!DO NOT USE THE SAME PASSWORD YOU USE FOR JELLYFIN!!</div>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
-                            <input id="TrueFalseSetting" name="TrueFalseCheckBox" type="checkbox" is="emby-checkbox" />
-                            <span>A Checkbox</span>
+                            <input id="TokenAuthEnabled" name="TokenAuthEnabled" type="checkbox" is="emby-checkbox" />
+                            <span>Enable Subsonic token authentication</span>
                         </label>
-                    </div>
-                    <div class="inputContainer">
-                        <label class="inputeLabel inputLabelUnfocused" for="AString">A String</label>
-                        <input id="AString" name="AString" type="text" is="emby-input" />
-                        <div class="fieldDescription">Another Description</div>
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
@@ -41,35 +33,125 @@
             </div>
         </div>
         <script type="text/javascript">
-            var TemplateConfig = {
-                pluginUniqueId: '076A536C-50C8-47B0-BE4C-8C8DA06C7372'
+            let JellySonicConfig = {
+                pluginUniqueId: '076A536C-50C8-47B0-BE4C-8C8DA06C7372',
+
+                userConfigDefaults: {
+                    Password: "",
+                    JellyfinUserId: "",
+                    Options: {
+                        TokenAuthEnabled: false,
+                    },
+                },
+
+                buildUserList: function (users) {
+                    let html = "";
+                    users.forEach(function (user) {
+                        html += "<option value='" + user.Id + "'>" + user.Name + "</option>";
+                    })
+
+                    document.getElementById("User").innerHTML = html;
+                },
+
+                getSelectedUserId: function () {
+                    return document.querySelector("#User").value;
+                },
+
+                gatherInputValues: function () {
+                    return {
+                        Password: document.querySelector("#Password").value,
+                        JellyfinUserId: document.querySelector("#User").value,
+                        Options: {
+                            TokenAuthEnabled: document.querySelector("#TokenAuthEnabled").checked,
+                        },
+                    }
+                },
+
+                populateConfig: function (userData) {
+                    if (userData.Password != null) {
+                        document.querySelector("#Password")
+                            .value = userData.Password
+                    }
+
+                    if (userData.Options != null && userData.Options.TokenAuthEnabled != null) {
+                        document.querySelector("#TokenAuthEnabled").checked = userData.Options.TokenAuthEnabled;
+                    }
+                },
+
+                getUserConfig: function(config, userId) {
+                    if (config.Users == null) {
+                        return JellySonicConfig.userConfigDefaults;
+                    }
+
+                    let index = config.Users.map(function(user) {
+                        return user.JellyfinUserId
+                    }).indexOf(userId);
+
+                    if (index === -1) {
+                        return JellySonicConfig.userConfigDefaults;
+                    }
+
+                    return config.Users[index];
+                },
             };
 
-            document.querySelector('#TemplateConfigPage')
+            // Step 1, build user list and load settings of first user
+            document.querySelector('#JellySonicConfigPage')
                 .addEventListener('pageshow', function() {
                     Dashboard.showLoadingMsg();
-                    ApiClient.getPluginConfiguration(TemplateConfig.pluginUniqueId).then(function (config) {
-                        document.querySelector('#Options').value = config.Options;
-                        document.querySelector('#AnInteger').value = config.AnInteger;
-                        document.querySelector('#TrueFalseSetting').checked = config.TrueFalseSetting;
-                        document.querySelector('#AString').value = config.AString;
-                        Dashboard.hideLoadingMsg();
-                    });    
-                });
-            
-            document.querySelector('#TemplateConfigForm')
-                .addEventListener('submit', function() {
-                Dashboard.showLoadingMsg();
-                ApiClient.getPluginConfiguration(TemplateConfig.pluginUniqueId).then(function (config) {
-                    config.Options = document.querySelector('#Options').value;
-                    config.AnInteger = document.querySelector('#AnInteger').value;
-                    config.TrueFalseSetting = document.querySelector('#TrueFalseSetting').checked;
-                    config.AString = document.querySelector('#AString').value;
-                    ApiClient.updatePluginConfiguration(TemplateConfig.pluginUniqueId, config).then(function (result) {
-                        Dashboard.processPluginConfigurationUpdateResult(result);
+                    ApiClient.getUsers().then(function (users) {
+                        JellySonicConfig.buildUserList(users);
+                        ApiClient.getPluginConfiguration(JellySonicConfig.pluginUniqueId)
+                            .then(function (config) {
+                                let userConfig = JellySonicConfig.getUserConfig(config, users[0].Id);
+                                JellySonicConfig.populateConfig(userConfig);
+                                Dashboard.hideLoadingMsg();
+                        });
                     });
-                });
+            });
 
+            // Reload settings on user change in select
+            document.querySelector('#User')
+                .addEventListener('change', function () {
+                    Dashboard.showLoadingMsg();
+                    let userId = JellySonicConfig.getSelectedUserId();
+                    ApiClient.getPluginConfiguration(JellySonicConfig.pluginUniqueId)
+                        .then(function (config) {
+                            let userConfig = JellySonicConfig.getUserConfig(config, userId);
+                            JellySonicConfig.populateConfig(userConfig);
+                            Dashboard.hideLoadingMsg();
+                    });
+            });
+
+            // On submit, save configuration for currently selected user
+            document.querySelector('#JellySonicConfigForm')
+                .addEventListener('submit', function(e) {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(JellySonicConfig.pluginUniqueId)
+                        .then(function (config) {
+                            if (Object.keys(config).length === 0) {
+                                config.Users = [];
+                            }
+
+                            let selectedUserId = JellySonicConfig.getSelectedUserId();
+                            let index = config.Users.map(function(user) {
+                                return user.JellyfinUserId
+                            }).indexOf(selectedUserId);
+
+                            let newData = JellySonicConfig.gatherInputValues();
+                            if (index === -1) {
+                                config.Users.push(newData);
+                            } else {
+                                config.Users[index] = newData;
+                            }
+
+                            ApiClient.updatePluginConfiguration(JellySonicConfig.pluginUniqueId, config)
+                                .then(function (result) {
+                                Dashboard.processPluginConfigurationUpdateResult(result);
+                            });
+                    });
+
+                e.preventDefault();
                 return false;
             });
         </script>

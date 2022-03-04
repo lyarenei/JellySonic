@@ -1,22 +1,11 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using JellySonic.Models;
 using MediaBrowser.Model.Plugins;
 
 namespace JellySonic.Configuration;
-
-/// <summary>
-/// The configuration options.
-/// </summary>
-public enum SomeOptions
-{
-    /// <summary>
-    /// Option one.
-    /// </summary>
-    OneOption,
-
-    /// <summary>
-    /// Second option.
-    /// </summary>
-    AnotherOption
-}
 
 /// <summary>
 /// Plugin configuration.
@@ -28,30 +17,31 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public PluginConfiguration()
     {
-        // set default options here
-        Options = SomeOptions.AnotherOption;
-        TrueFalseSetting = true;
-        AnInteger = 2;
-        AString = "string";
+        Users = new List<JellySonicUser>();
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether some true or false setting is enabled..
+    /// Gets or sets users.
     /// </summary>
-    public bool TrueFalseSetting { get; set; }
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "I don't know how to properly write models for serialization")]
+    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "I don't know how to properly write models for serialization")]
+    public List<JellySonicUser> Users { get; set; }
 
-    /// <summary>
-    /// Gets or sets an integer setting.
-    /// </summary>
-    public int AnInteger { get; set; }
-
-    /// <summary>
-    /// Gets or sets a string setting.
-    /// </summary>
-    public string AString { get; set; }
-
-    /// <summary>
-    /// Gets or sets an enum option.
-    /// </summary>
-    public SomeOptions Options { get; set; }
+    // /// <summary>
+    // /// Get users.
+    // /// </summary>
+    // /// <returns>Users list.</returns>
+    // public Collection<JellySonicUser> GetUsers()
+    // {
+    //     return new Collection<JellySonicUser>(_users);
+    // }
+    //
+    // /// <summary>
+    // /// Set users.
+    // /// </summary>
+    // /// <param name="users">Users collection.</param>
+    // public void SetUsers(IEnumerable<JellySonicUser> users)
+    // {
+    //     _users = users.ToList();
+    // }
 }
