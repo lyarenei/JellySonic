@@ -12,7 +12,7 @@ namespace JellySonic.Models;
 /// <summary>
 /// Subsonic Child data type.
 /// </summary>
-public class Child : IResponseData, IIndexItem
+public class Child : IResponseData
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Child"/> class.
@@ -28,10 +28,19 @@ public class Child : IResponseData, IIndexItem
     /// Initializes a new instance of the <see cref="Child"/> class.
     /// </summary>
     /// <param name="item">General item.</param>
-    public Child(BaseItem item)
+    /// <param name="parentIsArtist">If audio item, indicates if the parent should be an artist ID. Default false => album ID.</param>
+    public Child(BaseItem item, bool parentIsArtist = false)
     {
         Id = item.Id.ToString();
-        Parent = item.ParentId.ToString();
+        try
+        {
+            Parent = parentIsArtist ? ((Audio)item).AlbumEntity.ParentId.ToString() : item.ParentId.ToString();
+        }
+        catch
+        {
+            Parent = item.ParentId.ToString();
+        }
+
         Title = item.Name;
         IsDir = item.IsFolder.ToString();
         Album = item.Album;

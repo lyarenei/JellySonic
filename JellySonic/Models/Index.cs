@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
-using JellySonic.Types;
 
 namespace JellySonic.Models;
 
@@ -13,7 +12,7 @@ namespace JellySonic.Models;
 /// </summary>
 [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "XML serialization")]
 [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "XML serialization")]
-public class Index : IIndexItem
+public class Index
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Index"/> class.

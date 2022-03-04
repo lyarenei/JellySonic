@@ -25,33 +25,37 @@ public class Indexes : IResponseData
     {
         LastModified = DateTime.Now.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
         IgnoredArticles = string.Empty;
-        IndexList = new List<IIndexItem>();
+        IndexArtists = new List<Artist>();
+        IndexList = new List<Index>();
+        IndexChildList = new List<Child>();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Indexes"/> class.
     /// </summary>
-    /// <param name="artists">List of items from query.</param>
-    public Indexes(IEnumerable<BaseItem> artists)
+    /// <param name="artists">List of artist items from query.</param>
+    /// <param name="songs">List of song items from query.</param>
+    public Indexes(IEnumerable<BaseItem> artists, IEnumerable<BaseItem> songs)
     {
-        // TODO this is incorrect implementation
         LastModified = DateTime.Now.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
         IgnoredArticles = string.Empty;
-        var artistIndex = new List<Index>();
+        IndexArtists = artists.Select(artist => new Artist(artist));
+        IndexChildList = songs.Select(song => new Child(song, parentIsArtist: true));
 
+        var index = new List<Index>();
         foreach (var artist in artists)
         {
-            string indexName = char.IsLetter(artist.SortName.First()) ? artist.SortName.First().ToString() : "#";
-            if (!artistIndex.Exists(idx => idx.Name == indexName))
+            string indexName = GetIndexKey(artist);
+            if (!index.Exists(idx => idx.Name == indexName))
             {
-                artistIndex.Add(new Index(indexName));
+                index.Add(new Index(indexName));
             }
 
-            int aIdx = artistIndex.FindIndex(idx => idx.Name == indexName);
-            artistIndex[aIdx].Artists = artistIndex[aIdx].Artists.Append(new Artist(artist));
+            int aIdx = index.FindIndex(idx => idx.Name == indexName);
+            index[aIdx].Artists = index[aIdx].Artists.Append(new Artist(artist));
         }
 
-        IndexList = artistIndex;
+        IndexList = index;
     }
 
     /// <summary>
@@ -67,24 +71,67 @@ public class Indexes : IResponseData
     public string IgnoredArticles { get; set; }
 
     /// <summary>
-    /// Gets or sets index of indexes containing artists.
+    /// Gets or sets index of artists.
     /// </summary>
     [XmlIgnore]
     [JsonIgnore]
-    public IEnumerable<IIndexItem> IndexList { get; set; }
+    public IEnumerable<Artist> IndexArtists { get; set; }
 
     /// <summary>
-    /// Gets or sets index of indexes used for serialization.
-    /// <seealso cref="IndexList"/>
+    /// Gets or sets index of artists used for serialization.
+    /// <seealso cref="IndexArtists"/>
     /// </summary>
-    [XmlElement("shortcut", typeof(Artist))]
-    [XmlElement("index", typeof(Index))]
-    [XmlElement("child", typeof(Child))]
+    [XmlElement("shortcut")]
     [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<object> IndexListSerialize
+    public List<Artist> IndexArtistsSerialize
     {
-        get { return IndexList.Cast<object>().ToList(); }
-        set { IndexList = value.Cast<IIndexItem>(); }
+        get { return IndexArtists.ToList(); }
+        set { IndexArtists = value; }
+    }
+
+    /// <summary>
+    /// Gets or sets indexes.
+    /// </summary>
+    [XmlIgnore]
+    [JsonIgnore]
+    public IEnumerable<Index> IndexList { get; set; }
+
+    /// <summary>
+    /// Gets or sets indexes used for serialization.
+    /// <seealso cref="IndexList"/>
+    /// </summary>
+    [XmlElement("index")]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public List<Index> IndexesSerialize
+    {
+        get { return IndexList.ToList(); }
+        set { IndexList = value; }
+    }
+
+    /// <summary>
+    /// Gets or sets index of artists.
+    /// </summary>
+    [XmlIgnore]
+    [JsonIgnore]
+    public IEnumerable<Child> IndexChildList { get; set; }
+
+    /// <summary>
+    /// Gets or sets index of artists used for serialization.
+    /// <seealso cref="IndexArtists"/>
+    /// </summary>
+    [XmlElement("child")]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public List<Child> IndexChildListSerialize
+    {
+        get { return IndexChildList.ToList(); }
+        set { IndexChildList = value; }
+    }
+
+    private static string GetIndexKey(BaseItem item)
+    {
+        return char.IsLetter(item.SortName.First()) ? item.SortName.First().ToString() : "#";
     }
 }

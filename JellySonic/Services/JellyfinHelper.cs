@@ -163,6 +163,22 @@ public class JellyfinHelper
     }
 
     /// <summary>
+    /// Get all songs.
+    /// </summary>
+    /// <returns>Collection of all songs in the library.</returns>
+    public IEnumerable<BaseItem> GetAllSongs()
+    {
+        var query = new InternalItemsQuery
+        {
+            IncludeItemTypes = new[] { BaseItemKind.Audio },
+            OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+            Recursive = true
+        };
+
+        return _libraryManager.GetItemList(query);
+    }
+
+    /// <summary>
     /// Get folders.
     /// </summary>
     /// <param name="user">User performing the query.</param>

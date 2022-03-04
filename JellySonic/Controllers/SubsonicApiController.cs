@@ -400,9 +400,16 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        // TODO fetch and process real data
+        var artists = _jellyfinHelper.GetArtists(user);
+        if (artists == null)
+        {
+            var err = new SubsonicError("error when retrieving artists", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
 
-        var indexesResponseData = new Indexes();
+        var songs = _jellyfinHelper.GetAllSongs();
+
+        var indexesResponseData = new Indexes(artists, songs);
         return BuildOutput(new SubsonicResponse { ResponseData = indexesResponseData });
     }
 
