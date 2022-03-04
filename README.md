@@ -96,7 +96,7 @@ Any management of the server or user(s) is the responsibility of the Jellyfin se
 | stream      | partial     | optional parameters not implemented |
 | download    | yes         |                                     |
 | hls         | no          | not planned                         |
-| getCaptions | no          | out of scope                        |
+| getCaptions | no          | out of project scope                |
 | getCoverArt | partial     | size parameter not implemented      |
 | getLyrics   | no          | not planned                         |
 | getAvatar   | no          | planned                             |
