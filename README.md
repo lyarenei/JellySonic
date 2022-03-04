@@ -5,14 +5,15 @@ This plugin enables your Jellyfin server to serve Subsonic clients.
 
 ## What is implemented
 
-The state of implementation can be found in the tables below.
+### Endpoints
+The state of endpoints implementation can be found in the tables below.
 Click on each endpoint type reveal the tables.
 If you have found any issues, please check the implementation state before opening an issue.
 
 The current scope is to implement such endpoints to allow clients to provide basic/minimal, but reasonable user experience.
 
-The aim of this plugin is to serve the subsonic clients for music playback.
-Any management of the server or user(s) is the responsibility of the Jellyfin server.
+The primary aim of this plugin is to serve the subsonic clients for _music_ playback.
+Any management of the libraries, server or user(s) is the responsibility of the Jellyfin server.
 
 <details>
   <summary>System</summary>
