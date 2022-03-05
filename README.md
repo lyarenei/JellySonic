@@ -221,14 +221,14 @@ Any management of the libraries, server or user(s) is the responsibility of the 
 <details>
   <summary>User management</summary>
 
-| endpoint       | implemented | notes                |
-|----------------|-------------|----------------------|
-| getUser        | no          | planned              |
-| getUsers       | no          | out of project scope |
-| createUser     | no          | out of project scope |
-| updateUser     | no          | out of project scope |
-| deleteUser     | no          | out of project scope |
-| changePassword | no          | out of project scope |
+| endpoint       | implemented | notes                                       |
+|----------------|-------------|---------------------------------------------|
+| getUser        | partial     | folders in the response are not implemented |
+| getUsers       | no          | out of project scope                        |
+| createUser     | no          | out of project scope                        |
+| updateUser     | no          | out of project scope                        |
+| deleteUser     | no          | out of project scope                        |
+| changePassword | no          | out of project scope                        |
 
 </details>
 

@@ -537,6 +537,29 @@ public class SubsonicApiController : ControllerBase
         return BuildOutput(new SubsonicResponse { ResponseData = searchResponseData });
     }
 
+    /// <summary>
+    /// Get user with specified ID.
+    /// </summary>
+    /// <returns>A Subsonic user response.</returns>
+    [HttpGet]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getUser")]
+    [Route("getUser.view")]
+    public ActionResult GetSubsonicUser()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var jellyfinUser = _jellyfinHelper.GetUserByUsername(GetRequestParams().Username);
+        var userResponseData = new SubsonicUser(jellyfinUser);
+        return BuildOutput(new SubsonicResponse { ResponseData = userResponseData });
+    }
+
     private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError()
     {
         var requestParams = GetRequestParams();
