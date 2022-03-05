@@ -48,8 +48,8 @@ public class SubsonicApiController : ControllerBase
     /// <returns>User authentication is successful.</returns>
     public User? AuthenticateUser()
     {
-        string username = Request.Query["u"];
-        var user = _jellyfinHelper.GetUserByUsername(username);
+        var requestParams = GetRequestParams();
+        var user = _jellyfinHelper.GetUserByUsername(requestParams.Username);
 
         var jsUser = JellySonic.Instance?.Configuration.Users
             .FirstOrDefault(u => u.JellyfinUserId == user.Id);
@@ -61,16 +61,14 @@ public class SubsonicApiController : ControllerBase
                 _logger.LogWarning(
                     "({Username}) Password is not set for token authentication " +
                     "- either set a password or disable token authentication",
-                    username);
+                    requestParams.Username);
                 return null;
             }
 
-            var token = Request.Query["t"];
-            var salt = Request.Query["s"];
-            return PerformTokenAuth(jsUser.Password, token, salt) ? user : null;
+            return PerformTokenAuth(jsUser.Password, requestParams.Token, requestParams.Salt) ? user : null;
         }
 
-        return PerformPasswordAuth(username, Request.Query["p"]) ? user : null;
+        return PerformPasswordAuth(requestParams.Username, requestParams.Password) ? user : null;
     }
 
     private bool PerformPasswordAuth(string username, string password)
@@ -97,7 +95,7 @@ public class SubsonicApiController : ControllerBase
     /// <returns>Output file.</returns>
     public FileStreamResult BuildOutput(SubsonicResponse subsonicResponse)
     {
-        var format = SubsonicResponse.FormatFromString(Request.Query["f"]);
+        var format = SubsonicResponse.FormatFromString(GetRequestParams().Format);
         var memoryStream = subsonicResponse.ToMemoryStream(format);
         return format switch
         {
@@ -111,6 +109,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>Found album or error.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getAlbum")]
     [Route("getAlbum.view")]
@@ -123,7 +122,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var album = _jellyfinHelper.GetAlbumById(Request.Query["id"]);
+        var album = _jellyfinHelper.GetAlbumById(GetRequestParams().Id);
         if (album == null)
         {
             var err = new SubsonicError("album not found", ErrorCodes.DataNotFound);
@@ -139,6 +138,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>Found artist or error.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getArtist")]
     [Route("getArtist.view")]
@@ -151,7 +151,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var artist = _jellyfinHelper.GetArtistById(Request.Query["id"]);
+        var artist = _jellyfinHelper.GetArtistById(GetRequestParams().Id);
         if (artist == null)
         {
             var err = new SubsonicError("artist not found", ErrorCodes.DataNotFound);
@@ -177,6 +177,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>Artists Subsonic response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getArtists")]
     [Route("getArtists.view")]
@@ -220,6 +221,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>A Subsonic <see cref="License"/> response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getLicense")]
     [Route("getLicense.view")]
@@ -246,6 +248,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>A subsonic <see cref="Child"/> response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getSong")]
     [Route("getSong.view")]
@@ -258,7 +261,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse { ResponseData = err });
         }
 
-        var song = _jellyfinHelper.GetSongById(Request.Query["id"]);
+        var song = _jellyfinHelper.GetSongById(GetRequestParams().Id);
         if (song == null)
         {
             var err = new SubsonicError("song not found", ErrorCodes.DataNotFound);
@@ -274,6 +277,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>A Subsonic music folders response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getMusicFolders")]
     [Route("getMusicFolders.view")]
@@ -302,6 +306,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>A Subsonic music folders response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getMusicDirectory")]
     [Route("getMusicDirectory.view")]
@@ -314,7 +319,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var directory = _jellyfinHelper.GetDirectoryById(Request.Query["id"]);
+        var directory = _jellyfinHelper.GetDirectoryById(GetRequestParams().Id);
         if (directory == null)
         {
             var err = new SubsonicError("directory not found", ErrorCodes.DataNotFound);
@@ -330,6 +335,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>Cover art as binary data.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Route("getCoverArt")]
@@ -343,7 +349,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var item = _jellyfinHelper.GetItemById(Request.Query["id"]);
+        var item = _jellyfinHelper.GetItemById(GetRequestParams().Id);
         if (string.IsNullOrEmpty(item?.PrimaryImagePath))
         {
             return NoContent();
@@ -358,6 +364,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>Item as binary data.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("download")]
     [Route("download.view")]
@@ -372,7 +379,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var item = _jellyfinHelper.GetItemById(Request.Query["id"]);
+        var item = _jellyfinHelper.GetItemById(GetRequestParams().Id);
         if (item == null)
         {
             var err = new SubsonicError("item not found", ErrorCodes.DataNotFound);
@@ -390,6 +397,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>A Subsonic genres response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getGenres")]
     [Route("getGenres.view")]
@@ -418,6 +426,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>A Subsonic indexes response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getIndexes")]
     [Route("getIndexes.view")]
@@ -448,6 +457,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>A Subsonic album list or album list 2 response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("getAlbumList")]
     [Route("getAlbumList.view")]
@@ -485,6 +495,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <returns>A Subsonic search result 2 or 3 response.</returns>
     [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Route("search2")]
     [Route("search2.view")]
@@ -528,6 +539,7 @@ public class SubsonicApiController : ControllerBase
 
     private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError()
     {
+        var requestParams = GetRequestParams();
         var user = AuthenticateUser();
         if (user == null)
         {
@@ -535,14 +547,14 @@ public class SubsonicApiController : ControllerBase
             return (null, BuildOutput(new SubsonicResponse("failed") { ResponseData = err }));
         }
 
-        string type = Request.Query["type"];
-        if (!int.TryParse(Request.Query["size"], out var size))
+        string type = requestParams.Type;
+        if (!int.TryParse(requestParams.Size, out var size))
         {
             _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
             size = 10;
         }
 
-        if (!int.TryParse(Request.Query["offset"], out var offset))
+        if (!int.TryParse(requestParams.Offset, out var offset))
         {
             _logger.LogWarning("Failed to parse offset as a number, will use default value");
             offset = 0;
@@ -550,16 +562,16 @@ public class SubsonicApiController : ControllerBase
 
         int? fromYear = null;
         int? toYear = null;
-        if (Request.Query["type"] == "byYear")
+        if (requestParams.Type == "byYear")
         {
-            if (!int.TryParse(Request.Query["fromYear"], out var fYear))
+            if (!int.TryParse(requestParams.FromYear, out var fYear))
             {
                 _logger.LogWarning("Failed to parse fromYear as a number");
                 var err = new SubsonicError("invalid fromYear parameter value", ErrorCodes.Generic);
                 return (null, BuildOutput(new SubsonicResponse("failed") { ResponseData = err }));
             }
 
-            if (!int.TryParse(Request.Query["toYear"], out var tYear))
+            if (!int.TryParse(requestParams.ToYear, out var tYear))
             {
                 _logger.LogWarning("Failed to parse toYear as a number");
                 var err = new SubsonicError("invalid toYear parameter value", ErrorCodes.Generic);
@@ -571,9 +583,9 @@ public class SubsonicApiController : ControllerBase
         }
 
         string? genre = null;
-        if (Request.Query["type"] == "byGenre")
+        if (requestParams.Type == "byGenre")
         {
-            genre = Request.Query["genre"];
+            genre = requestParams.Genre;
             if (string.IsNullOrEmpty(genre))
             {
                 _logger.LogWarning("Genre parameter must be set if type parameter is set to byGenre");
@@ -588,59 +600,198 @@ public class SubsonicApiController : ControllerBase
 
     private IEnumerable<BaseItem>? PerformSearch(string searchType)
     {
-        var query = Request.Query["query"];
+        var requestParams = GetRequestParams();
         if (searchType == "artists")
         {
-            if (!int.TryParse(Request.Query["artistCount"], out var artistCount))
+            if (!int.TryParse(requestParams.ArtistCount, out var artistCount))
             {
                 _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
                 artistCount = 20;
             }
 
-            if (!int.TryParse(Request.Query["artistOffset"], out var artistOffset))
+            if (!int.TryParse(requestParams.ArtistOffset, out var artistOffset))
             {
                 _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
                 artistOffset = 0;
             }
 
-            return _jellyfinHelper.Search("artists", query, artistCount, artistOffset);
+            return _jellyfinHelper.Search("artists", requestParams.Query, artistCount, artistOffset);
         }
 
         if (searchType == "albums")
         {
-            if (!int.TryParse(Request.Query["albumCount"], out var albumCount))
+            if (!int.TryParse(requestParams.AlbumCount, out var albumCount))
             {
                 _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
                 albumCount = 20;
             }
 
-            if (!int.TryParse(Request.Query["albumOffset"], out var albumOffset))
+            if (!int.TryParse(requestParams.AlbumOffset, out var albumOffset))
             {
                 _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
                 albumOffset = 0;
             }
 
-            return _jellyfinHelper.Search("albums", query, albumCount, albumOffset);
+            return _jellyfinHelper.Search("albums", requestParams.Query, albumCount, albumOffset);
         }
 
         if (searchType == "songs")
         {
-            if (!int.TryParse(Request.Query["songCount"], out var songCount))
+            if (!int.TryParse(requestParams.SongCount, out var songCount))
             {
                 _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
                 songCount = 10;
             }
 
-            if (!int.TryParse(Request.Query["songOffset"], out var songOffset))
+            if (!int.TryParse(requestParams.SongOffset, out var songOffset))
             {
                 _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
                 songOffset = 0;
             }
 
-            return _jellyfinHelper.Search("songs", query, songCount, songOffset);
+            return _jellyfinHelper.Search("songs", requestParams.Query, songCount, songOffset);
         }
 
         _logger.LogDebug("Invalid search type specified");
         return null;
     }
+
+    private SubsonicParams GetRequestParams()
+    {
+        return Request.Method == "GET" ? new SubsonicParams(Request.Query) : new SubsonicParams(Request.Form);
+    }
+}
+
+/// <summary>
+/// Subsonic request parameters.
+/// </summary>
+public class SubsonicParams
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SubsonicParams"/> class.
+    /// </summary>
+    /// <param name="data">Query data.</param>
+    public SubsonicParams(IQueryCollection data)
+    {
+        // TODO This would be very nice to dedupe
+
+        Username = data["u"];
+        Password = data["p"];
+        Token = data["t"];
+        Salt = data["s"];
+        Version = data["v"];
+        Client = data["c"];
+        Format = data["f"];
+
+        Id = data["id"];
+        MusicFolderId = data["musicFolderId"];
+        IfModifiedSince = data["ifModifiedSince"];
+        Count = data["count"];
+        IncludeNotPresent = data["includeNotPresent"];
+        Artist = data["artist"];
+        Type = data["type"];
+        Size = data["size"];
+        Offset = data["offset"];
+        FromYear = data["fromYear"];
+        ToYear = data["toYear"];
+        Genre = data["genre"];
+        Query = data["query"];
+        ArtistCount = data["artistCount"];
+        ArtistOffset = data["artistOffset"];
+        AlbumCount = data["albumCount"];
+        AlbumOffset = data["albumOffset"];
+        SongCount = data["songCount"];
+        SongOffset = data["songOffset"];
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SubsonicParams"/> class.
+    /// </summary>
+    /// <param name="data">Form data.</param>
+    public SubsonicParams(IFormCollection data)
+    {
+        Username = data["u"];
+        Password = data["p"];
+        Token = data["t"];
+        Salt = data["s"];
+        Version = data["v"];
+        Client = data["c"];
+        Format = data["f"];
+
+        Id = data["id"];
+        MusicFolderId = data["musicFolderId"];
+        IfModifiedSince = data["ifModifiedSince"];
+        Count = data["count"];
+        IncludeNotPresent = data["includeNotPresent"];
+        Artist = data["artist"];
+        Type = data["type"];
+        Size = data["size"];
+        Offset = data["offset"];
+        FromYear = data["fromYear"];
+        ToYear = data["toYear"];
+        Genre = data["genre"];
+        Query = data["query"];
+        ArtistCount = data["artistCount"];
+        ArtistOffset = data["artistOffset"];
+        AlbumCount = data["albumCount"];
+        AlbumOffset = data["albumOffset"];
+        SongCount = data["songCount"];
+        SongOffset = data["songOffset"];
+    }
+
+#pragma warning disable CS1591
+
+    public string SongOffset { get; }
+
+    public string SongCount { get; }
+
+    public string AlbumOffset { get; }
+
+    public string AlbumCount { get; }
+
+    public string ArtistOffset { get; }
+
+    public string ArtistCount { get; }
+
+    public string Query { get; }
+
+    public string Genre { get; }
+
+    public string ToYear { get; }
+
+    public string FromYear { get; }
+
+    public string Offset { get; }
+
+    public string Size { get; }
+
+    public string Type { get; }
+
+    public string IncludeNotPresent { get; }
+
+    public string Count { get; }
+
+    public string IfModifiedSince { get; }
+
+    public string MusicFolderId { get; }
+
+    public string Id { get; }
+
+    public string Artist { get; }
+
+    public string Version { get; }
+
+    public string Salt { get; }
+
+    public string Token { get; }
+
+    public string Username { get; }
+
+    public string Password { get; }
+
+    public string Client { get; }
+
+    public string Format { get; }
+
+#pragma warning restore CS1591
 }
