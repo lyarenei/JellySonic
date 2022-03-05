@@ -60,7 +60,6 @@ public class SubsonicUser : IResponseData
     /// <summary>
     /// Gets folders user has an access to.
     /// </summary>
-    [XmlText]
     [XmlElement("folder")]
     public Collection<int> Folders { get; }
 
