@@ -78,7 +78,7 @@ public class ArtistId3
     }
 
     /// <summary>
-    /// Gets or sets if date of starred artist.
+    /// Gets or sets date of starring the artist.
     /// </summary>
     [XmlAttribute("starred")]
     public string? Starred { get; set; }
