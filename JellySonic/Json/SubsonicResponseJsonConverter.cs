@@ -28,7 +28,7 @@ public class SubsonicResponseJsonConverter : JsonConverter<SubsonicResponse>
             { typeof(License), "license" },
             { typeof(Child), "song" },
             { typeof(MusicFolders), "musicFolders" },
-            { typeof(Directory), "directory" },
+            { typeof(SubsonicDirectory), "directory" },
             { typeof(SubsonicError), "error" },
             { typeof(Genres), "genres" },
             { typeof(Indexes), "indexes" },

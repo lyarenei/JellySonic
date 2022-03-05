@@ -77,7 +77,7 @@ public class SubsonicResponse
     [XmlElement("license", typeof(License))]
     [XmlElement("song", typeof(Child))]
     [XmlElement("musicFolders", typeof(MusicFolders))]
-    [XmlElement("directory", typeof(Directory))]
+    [XmlElement("directory", typeof(SubsonicDirectory))]
     [XmlElement("error", typeof(SubsonicError))]
     [XmlElement("genres", typeof(Genres))]
     [XmlElement("indexes", typeof(Indexes))]

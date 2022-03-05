@@ -13,12 +13,12 @@ namespace JellySonic.Models;
 /// </summary>
 [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "XML serialization")]
 [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "XML serialization")]
-public class Directory : IResponseData
+public class SubsonicDirectory : IResponseData
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Directory"/> class.
+    /// Initializes a new instance of the <see cref="SubsonicDirectory"/> class.
     /// </summary>
-    public Directory()
+    public SubsonicDirectory()
     {
         ChildList = new List<Child>();
         Id = string.Empty;
@@ -26,10 +26,10 @@ public class Directory : IResponseData
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Directory"/> class.
+    /// Initializes a new instance of the <see cref="SubsonicDirectory"/> class.
     /// </summary>
     /// <param name="item">Folder item.</param>
-    public Directory(BaseItem item)
+    public SubsonicDirectory(BaseItem item)
     {
         try
         {

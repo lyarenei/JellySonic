@@ -16,7 +16,6 @@ using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Directory = JellySonic.Models.Directory;
 
 namespace JellySonic.Controllers;
 
@@ -326,7 +325,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var directoryResponseData = new Directory(directory);
+        var directoryResponseData = new SubsonicDirectory(directory);
         return BuildOutput(new SubsonicResponse { ResponseData = directoryResponseData });
     }
 
