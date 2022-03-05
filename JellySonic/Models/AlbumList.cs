@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using JellySonic.Types;
 using MediaBrowser.Controller.Entities;
@@ -33,5 +34,6 @@ public class AlbumList : IResponseData
     /// Gets list of albums.
     /// </summary>
     [XmlElement("album")]
+    [JsonPropertyName("album")]
     public Collection<Child> Albums { get; }
 }
