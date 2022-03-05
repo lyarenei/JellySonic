@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
@@ -11,8 +10,6 @@ namespace JellySonic.Models;
 /// <summary>
 /// A Subsonic directory response data.
 /// </summary>
-[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "XML serialization")]
-[SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "XML serialization")]
 public class SubsonicDirectory : IResponseData
 {
     /// <summary>
@@ -20,7 +17,7 @@ public class SubsonicDirectory : IResponseData
     /// </summary>
     public SubsonicDirectory()
     {
-        ChildList = new List<Child>();
+        ChildCollection = new Collection<Child>();
         Id = string.Empty;
         Name = string.Empty;
     }
@@ -33,11 +30,13 @@ public class SubsonicDirectory : IResponseData
     {
         try
         {
-            ChildList = ((Folder)item).Children.Select(childItem => new Child(childItem)).ToList();
+            var folder = (Folder)item;
+            var childList = folder.Children.Select(childItem => new Child(childItem)).ToList();
+            ChildCollection = new Collection<Child>(childList);
         }
         catch
         {
-            ChildList = new List<Child>();
+            ChildCollection = new Collection<Child>();
         }
 
         Id = item.Id.ToString();
@@ -46,7 +45,7 @@ public class SubsonicDirectory : IResponseData
     }
 
     /// <summary>
-    /// Gets or sets ID of the directory.
+    /// Gets or sets iD of the directory.
     /// </summary>
     [XmlAttribute("id")]
     public string Id { get; set; }
@@ -88,20 +87,9 @@ public class SubsonicDirectory : IResponseData
     public string? PlayCount { get; set; }
 
     /// <summary>
-    /// Gets or sets collection of directory child elements.
-    /// </summary>
-    [XmlIgnore]
-    [JsonIgnore]
-    public IEnumerable<Child> ChildList { get; set; }
-
-    /// <summary>
-    /// Gets or sets collection of directory child elements used for serialization.
+    /// Gets collection of directory child elements.
     /// </summary>
     [XmlElement("child")]
     [JsonPropertyName("child")]
-    public List<Child> ChildListSerialize
-    {
-        get { return ChildList.ToList(); }
-        set { ChildList = value; }
-    }
+    public Collection<Child> ChildCollection { get; }
 }
