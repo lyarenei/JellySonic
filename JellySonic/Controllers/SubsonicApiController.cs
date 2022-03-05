@@ -45,7 +45,7 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Authenticate user in Jellyfin.
     /// </summary>
-    /// <returns>User authentication is successful.</returns>
+    /// <returns>User instance if authentication is successful. Null otherwise.</returns>
     public User? AuthenticateUser()
     {
         var requestParams = GetRequestParams();
