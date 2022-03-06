@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Template</title>
+    <title>JellySonic configuration</title>
 </head>
 <body>
     <div id="JellySonicConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
@@ -16,13 +16,8 @@
                     <div class="inputContainer">
                         <label class="inputLabel inputLabelUnfocused" for="Password">Password</label>
                         <input id="Password" name="Password" type="password" is="emby-input" min="0" />
-                        <div class="fieldDescription">Password used for Subsonic token authentication. !!DO NOT USE THE SAME PASSWORD YOU USE FOR JELLYFIN!!</div>
-                    </div>
-                    <div class="checkboxContainer checkboxContainer-withDescription">
-                        <label class="emby-checkbox-label">
-                            <input id="TokenAuthEnabled" name="TokenAuthEnabled" type="checkbox" is="emby-checkbox" />
-                            <span>Enable Subsonic token authentication</span>
-                        </label>
+                        <div class="fieldDescription">Password used for Subsonic authentication.</div>
+                        <div class="fieldDescription">This password should not be the same you use to access Jellyfin server.</div>
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
@@ -39,9 +34,7 @@
                 userConfigDefaults: {
                     Password: "",
                     JellyfinUserId: "",
-                    Options: {
-                        TokenAuthEnabled: true,
-                    },
+                    Options: {},
                 },
 
                 buildUserList: function (users) {
@@ -62,7 +55,6 @@
                         Password: document.querySelector("#Password").value,
                         JellyfinUserId: document.querySelector("#User").value,
                         Options: {
-                            TokenAuthEnabled: document.querySelector("#TokenAuthEnabled").checked,
                         },
                     }
                 },
@@ -71,10 +63,6 @@
                     if (userData.Password != null) {
                         document.querySelector("#Password")
                             .value = userData.Password
-                    }
-
-                    if (userData.Options != null && userData.Options.TokenAuthEnabled != null) {
-                        document.querySelector("#TokenAuthEnabled").checked = userData.Options.TokenAuthEnabled;
                     }
                 },
 

@@ -3,22 +3,27 @@ An **experimental** subsonic plugin for Jellyfin.
 
 This plugin enables your Jellyfin server to serve Subsonic clients.
 
-### A note about token authentication
-This plugin supports token authentication, which was introduced in Subsonic API v1.13.0.
-This should be the preferred method of authentication and so it is enabled by default.
-However, this method only secures the password in transit, not on the server side,
-as the server needs an access to a plaintext password, so it can compute the token for authentication.
+### A note about authentication
+As the Subsonic authentication mechanism is pretty much insecure (the password is secured in transit at best),
+this plugin does not use Jellyfin user passwords to authorize Subsonic requests.
+This is because in one way or another the password is leaked:
+- When using token auth, the server needs an access to the password in order to compute hash for comparison
+- When using legacy auth, the password is sent with the request (obfuscated at best)
 
-To lessen the risk of "unauthorized" access using possibly leaked passwords,
-the plugin needs another password for the token authentication.
-This password is stored as **PLAINTEXT** (not encoded, can be read as-is) and therefore setting this password
-to the same password you use to access Jellyfin server is discouraged.
-That way, in the event of a leak, the "unauthorized" access scope is limited only
-to interaction with Jellyfin sever via Subsonic API.
 
-The server administrator needs to set up the token authentication for their users.
-Jellyfin plugins cannot implement user-facing plugin configurations (or at least I don't know about any solutions).
-To configure the token authentication, refer to [config](#configuration) section below.
+In both cases, the password is still somewhere shown in plaintext, so this plugin explicitly requires administrator
+to set a Subsonic password for their users, so they can successfully authenticate their requests.
+Please keep in mind, this password is stored in plaintext, as described above.
+There is no point in obfuscating it, as it would be easily recoverable and
+the server administrator knows the password anyway, in order to set it.
+If a potential attacker has an access to the plugin configuration file, you have much bigger problems than to
+worry about leaking users passwords (which essentially allows read only access to music on your server via Subsonic API).
+
+Naturally, as with any passwords, the general rules apply. Except the complexity, probably.
+
+As Jellyfin plugins cannot implement user-facing plugin configurations (or at least I don't know about any solutions),
+the server administrator must configure any user who wants to use the Subsonic plugin.
+To configure the user, refer to [config](#configuration) section below.
 
 ## Installation
 
@@ -38,15 +43,16 @@ Install your preferred version and restart the server as asked.
 
 ### Configuration
 
-Currently, the plugin allows configuration of Subsonic token authentication.
 To configure a user:
 1. Open plugin settings
 2. Select the user you want to configure
-3. Set a password for the authentication
-4. Enable token authentication
+3. Set a password for authentication
 
-After saving the configuration, do not forget to reconfigure the Subsonic client
-to use token authentication and change the password to the one you set in the plugin configuration.
+The password has no validation or anything.
+The only requirement is that it should not be the same as the user's Jellyfin password.
+
+After saving the configuration, the user should be able to authenticate with the password set in the plugin configuration.
+The user can use both token and password method, although the token method is preferred.
 
 
 ## Implemented Endpoints

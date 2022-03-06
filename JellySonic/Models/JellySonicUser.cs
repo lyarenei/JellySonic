@@ -45,11 +45,5 @@ public class JellySonicUserOptions
     /// </summary>
     public JellySonicUserOptions()
     {
-        TokenAuthEnabled = true;
     }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether user has enabled token authentication.
-    /// </summary>
-    public bool TokenAuthEnabled { get; set; }
 }

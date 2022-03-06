@@ -20,7 +20,7 @@ public class SubsonicResponse
     /// <summary>
     /// Reported version of the Subsonic server.
     /// </summary>
-    private const string ServerVer = "1.12.0";
+    private const string ServerVer = "1.13.0";
 
     /// <summary>
     /// Gets namespace.

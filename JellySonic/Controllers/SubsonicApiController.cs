@@ -10,7 +10,6 @@ using Jellyfin.Data.Entities;
 using JellySonic.Models;
 using JellySonic.Services;
 using JellySonic.Types;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Http;
@@ -53,38 +52,35 @@ public class SubsonicApiController : ControllerBase
         var jsUser = JellySonic.Instance?.Configuration.Users
             .FirstOrDefault(u => u.JellyfinUserId == user.Id);
 
-        if (jsUser != null && jsUser.Options.TokenAuthEnabled)
+        if (jsUser == null)
         {
-            if (string.IsNullOrEmpty(jsUser.Password))
-            {
-                _logger.LogWarning(
-                    "({Username}) Password is not set for token authentication " +
-                    "- either set a password or disable token authentication",
-                    requestParams.Username);
-                return null;
-            }
-
-            return PerformTokenAuth(jsUser.Password, requestParams.Token, requestParams.Salt) ? user : null;
+            _logger.LogError("Failed to load user configuration");
+            return null;
         }
 
-        return PerformPasswordAuth(requestParams.Username, requestParams.Password) ? user : null;
-    }
-
-    private bool PerformPasswordAuth(string username, string password)
-    {
-        string endpoint = HttpContext.GetNormalizedRemoteIp().ToString();
-        if (password.Contains("enc:", StringComparison.InvariantCulture))
+        if (string.IsNullOrEmpty(jsUser.Password))
         {
-            password = Utils.Utils.HexToAscii(password[4..]);
+            _logger.LogWarning(
+                "Password is not set for user {Username}, " +
+                "please set a password in plugin settings to be able to authenticate",
+                requestParams.Username);
+            return null;
         }
 
-        return _jellyfinHelper.AuthenticateUser(username, password, endpoint) != null;
-    }
+        if (requestParams.TokenAuthPossible())
+        {
+            var computedToken = Utils.Utils.Md5Hash(jsUser.Password + requestParams.Salt)
+                .ToLower(CultureInfo.InvariantCulture);
+            return computedToken == requestParams.Token ? user : null;
+        }
 
-    private static bool PerformTokenAuth(string password, string token, string salt)
-    {
-        var computedToken = Utils.Utils.Md5Hash(password + salt).ToLower(CultureInfo.InvariantCulture);
-        return computedToken == token.ToLower(CultureInfo.InvariantCulture);
+        if (!string.IsNullOrEmpty(requestParams.Password))
+        {
+            return requestParams.Password == jsUser.Password ? user : null;
+        }
+
+        _logger.LogDebug("Cannot authenticate user - token/salt or password missing");
+        return null;
     }
 
     /// <summary>
@@ -761,7 +757,17 @@ public class SubsonicParams
         SongOffset = data["songOffset"];
     }
 
+    /// <summary>
+    /// Determines if there's data necessary to perform token authentication.
+    /// </summary>
+    /// <returns>Token authentication is possible.</returns>
+    public bool TokenAuthPossible()
+    {
+        return !string.IsNullOrEmpty(Token) && !string.IsNullOrEmpty(Salt);
+    }
+
 #pragma warning disable CS1591
+#pragma warning disable SA1201
 
     public string SongOffset { get; }
 
@@ -815,5 +821,6 @@ public class SubsonicParams
 
     public string Format { get; }
 
+#pragma warning restore SA1201
 #pragma warning restore CS1591
 }
