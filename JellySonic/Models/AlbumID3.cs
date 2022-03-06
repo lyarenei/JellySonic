@@ -52,6 +52,7 @@ public class AlbumId3
         CoverArt = item.Id.ToString();
         Duration = Utils.Utils.TicksToSeconds(item.RunTimeTicks);
         Created = item.DateCreated.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
+        Genre = item.Genres.Length > 0 ? item.Genres[0] : null;
     }
 
     /// <summary>
