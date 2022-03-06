@@ -13,14 +13,14 @@ public class License : IResponseData
     /// </summary>
     public License()
     {
-        Valid = "true";
+        Valid = true;
     }
 
     /// <summary>
-    /// Gets or sets if a licence is valid.
+    /// Gets or sets a value indicating whether a licence is valid.
     /// </summary>
     [XmlAttribute("valid")]
-    public string Valid { get; set; }
+    public bool Valid { get; set; }
 
     /// <summary>
     /// Gets or sets a licence owner's e-mail.
