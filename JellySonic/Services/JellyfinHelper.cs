@@ -358,9 +358,9 @@ public class JellyfinHelper
         {
             query.Years = years;
         }
-        else if (string.IsNullOrEmpty(genre))
+        else if (!string.IsNullOrEmpty(genre))
         {
-            query.Genres = new[] { genre! };
+            query.Genres = new[] { genre };
         }
 
         var queryData = _libraryManager.GetItemList(query);
