@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
@@ -12,8 +11,6 @@ namespace JellySonic.Models;
 /// <summary>
 /// Subsonic ArtistID3 data type.
 /// </summary>
-[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "XML serialization")]
-[SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "XML serialization")]
 public class ArtistsId3 : IResponseData
 {
     /// <summary>
@@ -21,7 +18,7 @@ public class ArtistsId3 : IResponseData
     /// </summary>
     public ArtistsId3()
     {
-        IndexId3List = new List<IndexId3>();
+        IndexId3Collection = new Collection<IndexId3>();
         IgnoredArticles = string.Empty;
     }
 
@@ -44,29 +41,16 @@ public class ArtistsId3 : IResponseData
             artistIndex[aIdx].Artists = artistIndex[aIdx].Artists.Append(new ArtistId3(artist));
         }
 
-        IndexId3List = artistIndex;
+        IndexId3Collection = new Collection<IndexId3>(artistIndex);
         IgnoredArticles = string.Empty;
     }
 
     /// <summary>
-    /// Gets or sets collection of id3 indexes.
-    /// </summary>
-    [XmlIgnore]
-    [JsonIgnore]
-    public IEnumerable<IndexId3> IndexId3List { get; set; }
-
-    /// <summary>
-    /// Gets or sets collection of id3 indexes for serialization.
+    /// Gets collection of id3 indexes.
     /// </summary>
     [XmlElement("index")]
     [JsonPropertyName("index")]
-    [Browsable(false)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<IndexId3> IndexId3ListSerialize
-    {
-        get { return IndexId3List.ToList(); }
-        set { IndexId3List = value; }
-    }
+    public Collection<IndexId3> IndexId3Collection { get; }
 
     /// <summary>
     /// Gets or sets a series of ignored articles; separated by space.
