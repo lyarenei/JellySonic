@@ -1,5 +1,6 @@
-using System.Globalization;
+using System.ComponentModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using JellySonic.Types;
 using MediaBrowser.Controller.Entities;
@@ -20,7 +21,7 @@ public class Child : IResponseData
     public Child()
     {
         Id = string.Empty;
-        IsDir = string.Empty;
+        IsDir = false;
         Title = string.Empty;
     }
 
@@ -42,7 +43,7 @@ public class Child : IResponseData
         }
 
         Title = item.Name;
-        IsDir = item.IsFolder.ToString();
+        IsDir = item.IsFolder;
         Album = item.Album;
 
         try
@@ -54,17 +55,17 @@ public class Child : IResponseData
             Artist = string.Empty;
         }
 
-        Track = item.IndexNumber.ToString();
-        Year = item.ProductionYear.ToString();
+        Track = item.IndexNumber;
+        Year = item.ProductionYear;
         Genre = item.Genres.FirstOrDefault(string.Empty);
         CoverArt = item.Id.ToString();
-        Size = item.Size?.ToString(NumberFormatInfo.InvariantInfo);
+        Size = item.Size;
 
         var ext = GetExtension(item.Path);
         Suffix = string.IsNullOrEmpty(ext) ? null : ext[1..];
 
-        Duration = TicksToSeconds(item.RunTimeTicks).ToString(NumberFormatInfo.InvariantInfo);
-        BitRate = (item.TotalBitrate / 1000).ToString();
+        Duration = TicksToSeconds(item.RunTimeTicks);
+        BitRate = item.TotalBitrate / 1000;
         Path = item.Path;
     }
 
@@ -81,10 +82,10 @@ public class Child : IResponseData
     public string? Parent { get; set; }
 
     /// <summary>
-    /// Gets or sets if this child item is a directory.
+    /// Gets or sets a value indicating whether this child item is a directory.
     /// </summary>
     [XmlAttribute("isDir")]
-    public string IsDir { get; set; }
+    public bool IsDir { get; set; }
 
     /// <summary>
     /// Gets or sets name of the child item.
@@ -107,14 +108,40 @@ public class Child : IResponseData
     /// <summary>
     /// Gets or sets track order of child item.
     /// </summary>
+    [XmlIgnore]
+    public int? Track { get; set; }
+
+    /// <summary>
+    /// Gets or sets track order of child item for serialization.
+    /// </summary>
     [XmlAttribute("track")]
-    public string? Track { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int TrackSerialized
+    {
+        get { return Track ?? -1; }
+        set { Track = value; }
+    }
 
     /// <summary>
     /// Gets or sets release year of the child item.
     /// </summary>
+    [XmlIgnore]
+    public int? Year { get; set; }
+
+    /// <summary>
+    /// Gets or sets release year of the child item for serialization.
+    /// </summary>
     [XmlAttribute("year")]
-    public string? Year { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int YearSerialized
+    {
+        get { return Year ?? -1; }
+        set { Year = value; }
+    }
 
     /// <summary>
     /// Gets or sets genre of the child item.
@@ -131,8 +158,21 @@ public class Child : IResponseData
     /// <summary>
     /// Gets or sets filesize of the child item.
     /// </summary>
+    [XmlIgnore]
+    public long? Size { get; set; }
+
+    /// <summary>
+    /// Gets or sets filesize of the child item for serialization.
+    /// </summary>
     [XmlAttribute("size")]
-    public string? Size { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public long SizeSerialized
+    {
+        get { return Size ?? -1; }
+        set { Size = value; }
+    }
 
     /// <summary>
     /// Gets or sets content type of the child item.
@@ -160,16 +200,42 @@ public class Child : IResponseData
     public string? TranscodedSuffix { get; set; }
 
     /// <summary>
-    /// Gets or sets duration of the child item.
+    /// Gets or sets duration of the child item. In seconds.
     /// </summary>
-    [XmlAttribute("duration")]
-    public string? Duration { get; set; }
+    [XmlIgnore]
+    public long? Duration { get; set; }
 
     /// <summary>
-    /// Gets or sets bitrate of the child item.
+    /// Gets or sets duration of the child item for serialization.
+    /// </summary>
+    [XmlAttribute("duration")]
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public long DurationSerialized
+    {
+        get { return Duration ?? -1; }
+        set { Duration = value; }
+    }
+
+    /// <summary>
+    /// Gets or sets bitrate of the child item. In kbps.
+    /// </summary>
+    [XmlIgnore]
+    public int? BitRate { get; set; }
+
+    /// <summary>
+    /// Gets or sets bitrate of the child item for serialization.
     /// </summary>
     [XmlAttribute("bitRate")]
-    public string? BitRate { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int BitRateSerialized
+    {
+        get { return BitRate ?? -1; }
+        set { BitRate = value; }
+    }
 
     /// <summary>
     /// Gets or sets path to the child item filename.
@@ -180,8 +246,21 @@ public class Child : IResponseData
     /// <summary>
     /// Gets or sets if child item is a video.
     /// </summary>
+    [XmlIgnore]
+    public bool? IsVideo { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether child item is a video for serialization.
+    /// </summary>
     [XmlAttribute("isVideo")]
-    public string? IsVideo { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsVideoSerialized
+    {
+        get { return IsVideo ?? false; }
+        set { IsVideo = value; }
+    }
 
     /// <summary>
     /// Gets or sets child item user rating.
@@ -198,14 +277,40 @@ public class Child : IResponseData
     /// <summary>
     /// Gets or sets child item play count.
     /// </summary>
+    [XmlIgnore]
+    public int? PlayCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets child item play count for serialization.
+    /// </summary>
     [XmlAttribute("playCount")]
-    public string? PlayCount { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int PlayCountSerialized
+    {
+        get { return PlayCount ?? -1; }
+        set { PlayCount = value; }
+    }
 
     /// <summary>
     /// Gets or sets child item disc number.
     /// </summary>
+    [XmlIgnore]
+    public int? DiscNumber { get; set; }
+
+    /// <summary>
+    /// Gets or sets child item disc number for serialization.
+    /// </summary>
     [XmlAttribute("discNumber")]
-    public string? DiscNumber { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int DiscNumberSerialized
+    {
+        get { return DiscNumber ?? -1; }
+        set { DiscNumber = value; }
+    }
 
     /// <summary>
     /// Gets or sets if date of starred child item.
@@ -240,18 +345,145 @@ public class Child : IResponseData
     /// <summary>
     /// Gets or sets bookmark position in the child item.
     /// </summary>
+    [XmlIgnore]
+    public long? BookmarkPosition { get; set; }
+
+    /// <summary>
+    /// Gets or sets bookmark position in the child item for serialization.
+    /// </summary>
     [XmlAttribute("bookmarkPosition")]
-    public string? BookmarkPosition { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public long BookmarkPositionSerialized
+    {
+        get { return BookmarkPosition ?? -1; }
+        set { BookmarkPosition = value; }
+    }
 
     /// <summary>
     /// Gets or sets original width of the child item.
     /// </summary>
+    [XmlIgnore]
+    public int? OriginalWidth { get; set; }
+
+    /// <summary>
+    /// Gets or sets original width of the child item for serialization.
+    /// </summary>
     [XmlAttribute("originalWidth")]
-    public string? OriginalWidth { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int OriginalWidthSerialized
+    {
+        get { return OriginalWidth ?? -1; }
+        set { OriginalWidth = value; }
+    }
 
     /// <summary>
     /// Gets or sets original height of the child item.
     /// </summary>
+    [XmlIgnore]
+    public int? OriginalHeight { get; set; }
+
+    /// <summary>
+    /// Gets or sets original height of the child item for serialization.
+    /// </summary>
     [XmlAttribute("originalHeight")]
-    public string? OriginalHeight { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int OriginalHeightSerialized
+    {
+        get { return OriginalHeight ?? -1; }
+        set { OriginalHeight = value; }
+    }
+
+    /// <summary>
+    /// Determines if track order of child item should be serialized.
+    /// </summary>
+    /// <returns>True if track order has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeTrackSerialized() => Track != null;
+
+    /// <summary>
+    /// Determines if release year of child item should be serialized.
+    /// </summary>
+    /// <returns>True if release year has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeYearSerialized() => Year != null;
+
+    /// <summary>
+    /// Determines if size of child item should be serialized.
+    /// </summary>
+    /// <returns>True if size has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeSizeSerialized() => Size != null;
+
+    /// <summary>
+    /// Determines if duration of child item should be serialized.
+    /// </summary>
+    /// <returns>True if duration has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeDurationSerialized() => Duration != null;
+
+    /// <summary>
+    /// Determines if bitrate of child item should be serialized.
+    /// </summary>
+    /// <returns>True if bitrate has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeBitRateSerialized() => BitRate != null;
+
+    /// <summary>
+    /// Determines if child item is a video should be serialized.
+    /// </summary>
+    /// <returns>True if bitrate has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeIsVideoSerialized() => IsVideo != null;
+
+    /// <summary>
+    /// Determines if play count of child item should be serialized.
+    /// </summary>
+    /// <returns>True if play count has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializePlayCountSerialized() => PlayCount != null;
+
+    /// <summary>
+    /// Determines if disc number of child item should be serialized.
+    /// </summary>
+    /// <returns>True if disc number has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeDiscNumberSerialized() => DiscNumber != null;
+
+    /// <summary>
+    /// Determines if bookmark position in child item should be serialized.
+    /// </summary>
+    /// <returns>True if bookmark position has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeBookmarkPositionSerialized() => BookmarkPosition != null;
+
+    /// <summary>
+    /// Determines if original width of child item should be serialized.
+    /// </summary>
+    /// <returns>True if original width has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeOriginalWidthSerialized() => OriginalWidth != null;
+
+    /// <summary>
+    /// Determines if original height of child item should be serialized.
+    /// </summary>
+    /// <returns>True if original height has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeOriginalHeightSerialized() => OriginalHeight != null;
 }
