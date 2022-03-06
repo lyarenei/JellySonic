@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -24,8 +23,8 @@ public class AlbumId3
     {
         Id = string.Empty;
         Name = string.Empty;
-        SongCount = string.Empty;
-        Duration = string.Empty;
+        SongCount = 0;
+        Duration = 0;
         Created = DateTime.Now.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
     }
 
@@ -39,19 +38,19 @@ public class AlbumId3
         {
             var album = (MusicAlbum)item;
             Artist = album.AlbumArtist;
-            SongCount = album.Tracks.Count().ToString(NumberFormatInfo.InvariantInfo);
+            SongCount = album.Tracks.Count();
         }
         catch
         {
             Artist = string.Empty;
-            SongCount = string.Empty;
+            SongCount = 0;
         }
 
         Id = item.Id.ToString();
         Name = item.Name;
         ArtistId = item.DisplayParentId.ToString();
         CoverArt = item.Id.ToString();
-        Duration = Utils.Utils.TicksToSeconds(item.RunTimeTicks).ToString(NumberFormatInfo.InvariantInfo);
+        Duration = Utils.Utils.TicksToSeconds(item.RunTimeTicks);
         Created = item.DateCreated.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
     }
 
@@ -80,7 +79,7 @@ public class AlbumId3
     public string? ArtistId { get; set; }
 
     /// <summary>
-    /// Gets or sets cover art of the album.
+    /// Gets or sets cover art ID of the album.
     /// </summary>
     [XmlAttribute("coverArt")]
     public string? CoverArt { get; set; }
@@ -89,19 +88,32 @@ public class AlbumId3
     /// Gets or sets number of songs in the album.
     /// </summary>
     [XmlAttribute("songCount")]
-    public string SongCount { get; set; }
+    public int SongCount { get; set; }
 
     /// <summary>
     /// Gets or sets album duration in seconds.
     /// </summary>
     [XmlAttribute("duration")]
-    public string Duration { get; set; }
+    public long Duration { get; set; }
 
     /// <summary>
     /// Gets or sets album play count.
     /// </summary>
+    [XmlIgnore]
+    public int? PlayCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets album play count for serialization.
+    /// </summary>
     [XmlAttribute("playCount")]
-    public string? PlayCount { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int PlayCountSerialized
+    {
+        get { return PlayCount ?? -1; }
+        set { PlayCount = value; }
+    }
 
     /// <summary>
     /// Gets or sets date of album creation.
@@ -116,23 +128,50 @@ public class AlbumId3
     public string? Starred { get; set; }
 
     /// <summary>
-    /// Gets or sets release year of the song.
+    /// Gets or sets release year of the album.
     /// </summary>
-    [XmlAttribute("year")]
-    public string? Year { get; set; }
+    [XmlIgnore]
+    public int? Year { get; set; }
 
     /// <summary>
-    /// Gets or sets genre of the song.
+    /// Gets or sets album release year for serialization.
+    /// </summary>
+    [XmlAttribute("year")]
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int YearSerialized
+    {
+        get { return Year ?? -1; }
+        set { Year = value; }
+    }
+
+    /// <summary>
+    /// Gets or sets genre of the album.
     /// </summary>
     [XmlAttribute("genre")]
     public string? Genre { get; set; }
+
+    /// <summary>
+    /// Determines if album play count should be serialized.
+    /// </summary>
+    /// <returns>True if album count has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializePlayCountSerialized() => PlayCount != null;
+
+    /// <summary>
+    /// Determines if album release year should be serialized.
+    /// </summary>
+    /// <returns>True if album count has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeYearSerialized() => PlayCount != null;
 }
 
 /// <summary>
 /// Subsonic AlbumWithSongsID3 data type.
 /// </summary>
-[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "XML serialization")]
-[SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "XML serialization")]
 public class AlbumWithSongsId3 : AlbumId3, IResponseData
 {
     /// <summary>
@@ -140,7 +179,7 @@ public class AlbumWithSongsId3 : AlbumId3, IResponseData
     /// </summary>
     public AlbumWithSongsId3()
     {
-        Songs = new List<Child>();
+        Songs = new Collection<Child>();
     }
 
     /// <summary>
@@ -149,26 +188,13 @@ public class AlbumWithSongsId3 : AlbumId3, IResponseData
     /// <param name="item">Music Album.</param>
     public AlbumWithSongsId3(MusicAlbum item) : base(item)
     {
-        Songs = item.Tracks.Select(track => new Child(track)).ToList();
+        Songs = new Collection<Child>(item.Tracks.Select(track => new Child(track)).ToList());
     }
 
     /// <summary>
-    /// Gets or sets songs of album.
-    /// </summary>
-    [XmlIgnore]
-    [JsonIgnore]
-    public IEnumerable<Child> Songs { get; set; }
-
-    /// <summary>
-    /// Gets or sets songs of album for serialization.
+    /// Gets songs of album.
     /// </summary>
     [XmlElement("song")]
     [JsonPropertyName("song")]
-    [Browsable(false)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<Child> SongsSerialize
-    {
-        get { return Songs.ToList(); }
-        set { Songs = value; }
-    }
+    public Collection<Child> Songs { get; }
 }
