@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using System.Xml.Serialization;
 
 namespace JellySonic.Models;
@@ -14,8 +12,8 @@ public class Genre
     /// </summary>
     public Genre()
     {
-        SongCount = string.Empty;
-        AlbumCount = string.Empty;
+        SongCount = 0;
+        AlbumCount = 0;
         Name = string.Empty;
     }
 
@@ -28,21 +26,21 @@ public class Genre
     public Genre(string name, int albumCount, int songCount)
     {
         Name = name;
-        AlbumCount = albumCount.ToString(NumberFormatInfo.InvariantInfo);
-        SongCount = songCount.ToString(NumberFormatInfo.InvariantInfo);
+        AlbumCount = albumCount;
+        SongCount = songCount;
     }
 
     /// <summary>
     /// Gets or sets song count of the genre.
     /// </summary>
     [XmlAttribute("songCount")]
-    public string SongCount { get; set; }
+    public int SongCount { get; set;  }
 
     /// <summary>
     /// Gets or sets album count of the genre.
     /// </summary>
     [XmlAttribute("AlbumCount")]
-    public string AlbumCount { get; set; }
+    public int AlbumCount { get; set; }
 
     /// <summary>
     /// Gets or sets genre name.
@@ -56,9 +54,7 @@ public class Genre
     /// <param name="value">Value to increment with.</param>
     public void IncrementSongCount(int value = 1)
     {
-        var realValue = Convert.ToInt32(SongCount, NumberFormatInfo.InvariantInfo);
-        realValue += value;
-        SongCount = realValue.ToString(NumberFormatInfo.InvariantInfo);
+        SongCount += value;
     }
 
     /// <summary>
@@ -67,8 +63,6 @@ public class Genre
     /// <param name="value">Value to increment with.</param>
     public void IncrementAlbumCount(int value = 1)
     {
-        var realValue = Convert.ToInt32(AlbumCount, NumberFormatInfo.InvariantInfo);
-        realValue += value;
-        AlbumCount = realValue.ToString(NumberFormatInfo.InvariantInfo);
+        AlbumCount += value;
     }
 }
