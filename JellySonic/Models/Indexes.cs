@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -14,8 +13,6 @@ namespace JellySonic.Models;
 /// <summary>
 /// A Subsonic Indexes data type.
 /// </summary>
-[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "XML serialization")]
-[SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "XML serialization")]
 public class Indexes : IResponseData
 {
     /// <summary>
@@ -25,9 +22,9 @@ public class Indexes : IResponseData
     {
         LastModified = DateTime.Now.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
         IgnoredArticles = string.Empty;
-        IndexArtists = new List<Artist>();
-        IndexList = new List<Index>();
-        IndexChildList = new List<Child>();
+        Artists = new Collection<Artist>();
+        IndexCollection = new Collection<Index>();
+        ChildCollection = new Collection<Child>();
     }
 
     /// <summary>
@@ -37,25 +34,28 @@ public class Indexes : IResponseData
     /// <param name="songs">List of song items from query.</param>
     public Indexes(IEnumerable<BaseItem> artists, IEnumerable<BaseItem> songs)
     {
+        var artistList = artists.ToList();
+        var songList = songs.ToList();
+
         LastModified = DateTime.Now.ToString(Utils.Utils.IsoDateFormat, DateTimeFormatInfo.InvariantInfo);
         IgnoredArticles = string.Empty;
-        IndexArtists = artists.Select(artist => new Artist(artist));
-        IndexChildList = songs.Select(song => new Child(song, parentIsArtist: true));
+        Artists = new Collection<Artist>(artistList.Select(artist => new Artist(artist)).ToList());
+        ChildCollection = new Collection<Child>(songList.Select(song => new Child(song, parentIsArtist: true)).ToList());
 
-        var index = new List<Index>();
-        foreach (var artist in artists)
+        var indexList = new List<Index>();
+        foreach (var artist in artistList)
         {
             string indexName = GetIndexKey(artist);
-            if (!index.Exists(idx => idx.Name == indexName))
+            if (!indexList.Exists(idx => idx.Name == indexName))
             {
-                index.Add(new Index(indexName));
+                indexList.Add(new Index(indexName));
             }
 
-            int aIdx = index.FindIndex(idx => idx.Name == indexName);
-            index[aIdx].Artists = index[aIdx].Artists.Append(new Artist(artist));
+            int aIdx = indexList.FindIndex(idx => idx.Name == indexName);
+            indexList[aIdx].Artists = indexList[aIdx].Artists.Append(new Artist(artist));
         }
 
-        IndexList = index;
+        IndexCollection = new Collection<Index>(indexList);
     }
 
     /// <summary>
@@ -71,64 +71,25 @@ public class Indexes : IResponseData
     public string IgnoredArticles { get; set; }
 
     /// <summary>
-    /// Gets or sets index of artists.
-    /// </summary>
-    [XmlIgnore]
-    [JsonIgnore]
-    public IEnumerable<Artist> IndexArtists { get; set; }
-
-    /// <summary>
-    /// Gets or sets index of artists used for serialization.
-    /// <seealso cref="IndexArtists"/>
+    /// Gets artists collection.
     /// </summary>
     [XmlElement("shortcut")]
-    [Browsable(false)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<Artist> IndexArtistsSerialize
-    {
-        get { return IndexArtists.ToList(); }
-        set { IndexArtists = value; }
-    }
+    [JsonPropertyName("shortcut")]
+    public Collection<Artist> Artists { get; }
 
     /// <summary>
-    /// Gets or sets indexes.
-    /// </summary>
-    [XmlIgnore]
-    [JsonIgnore]
-    public IEnumerable<Index> IndexList { get; set; }
-
-    /// <summary>
-    /// Gets or sets indexes used for serialization.
-    /// <seealso cref="IndexList"/>
+    /// Gets index collection.
     /// </summary>
     [XmlElement("index")]
-    [Browsable(false)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<Index> IndexesSerialize
-    {
-        get { return IndexList.ToList(); }
-        set { IndexList = value; }
-    }
+    [JsonPropertyName("index")]
+    public Collection<Index> IndexCollection { get; }
 
     /// <summary>
-    /// Gets or sets index of artists.
-    /// </summary>
-    [XmlIgnore]
-    [JsonIgnore]
-    public IEnumerable<Child> IndexChildList { get; set; }
-
-    /// <summary>
-    /// Gets or sets index of artists used for serialization.
-    /// <seealso cref="IndexArtists"/>
+    /// Gets child collection.
     /// </summary>
     [XmlElement("child")]
-    [Browsable(false)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<Child> IndexChildListSerialize
-    {
-        get { return IndexChildList.ToList(); }
-        set { IndexChildList = value; }
-    }
+    [JsonPropertyName("child")]
+    public Collection<Child> ChildCollection { get; }
 
     private static string GetIndexKey(BaseItem item)
     {
