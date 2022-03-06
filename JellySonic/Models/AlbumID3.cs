@@ -189,7 +189,8 @@ public class AlbumWithSongsId3 : AlbumId3, IResponseData
     /// <param name="item">Music Album.</param>
     public AlbumWithSongsId3(MusicAlbum item) : base(item)
     {
-        Songs = new Collection<Child>(item.Tracks.Select(track => new Child(track)).ToList());
+        var songList = item.Tracks.Select(track => new Child(track)).OrderBy(child => child.Track);
+        Songs = new Collection<Child>(songList.ToList());
     }
 
     /// <summary>
