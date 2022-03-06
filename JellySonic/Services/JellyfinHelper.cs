@@ -50,7 +50,7 @@ public class JellyfinHelper
                     password,
                     string.Empty,
                     remoteEndpoint,
-                    true)
+                    false)
                 .ConfigureAwait(false);
 
             return user.GetAwaiter().GetResult();
