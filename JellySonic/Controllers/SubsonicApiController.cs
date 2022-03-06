@@ -166,7 +166,7 @@ public class SubsonicApiController : ControllerBase
 
         var artistsResponseData = new ArtistWithAlbumsId3(artist, albums)
         {
-            AlbumCount = albums.Count().ToString(NumberFormatInfo.InvariantInfo)
+            AlbumCount = albums.Count()
         };
         return BuildOutput(new SubsonicResponse { ResponseData = artistsResponseData });
     }

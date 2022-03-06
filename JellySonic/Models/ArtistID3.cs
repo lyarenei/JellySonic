@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -62,14 +61,35 @@ public class ArtistId3
     /// <summary>
     /// Gets or sets artist album count.
     /// </summary>
+    [XmlIgnore]
+    public int? AlbumCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets artist album count for serialization.
+    /// </summary>
     [XmlAttribute("albumCount")]
-    public string? AlbumCount { get; set; }
+    [JsonIgnore]
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int AlbumCountSerialized
+    {
+        get { return AlbumCount ?? -1; }
+        set { AlbumCount = value; }
+    }
 
     /// <summary>
     /// Gets or sets if date of starred artist.
     /// </summary>
     [XmlAttribute("starred")]
     public string? Starred { get; set; }
+
+    /// <summary>
+    /// Determines if album count should be serialized.
+    /// </summary>
+    /// <returns>True if album count has a value.</returns>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ShouldSerializeAlbumCountSerialized() => AlbumCount != null;
 }
 
 /// <summary>
