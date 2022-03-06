@@ -164,10 +164,10 @@ public class AlbumId3
     /// <summary>
     /// Determines if album release year should be serialized.
     /// </summary>
-    /// <returns>True if album count has a value.</returns>
+    /// <returns>True if album year has a value.</returns>
     [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool ShouldSerializeYearSerialized() => PlayCount != null;
+    public bool ShouldSerializeYearSerialized() => Year != null;
 }
 
 /// <summary>
