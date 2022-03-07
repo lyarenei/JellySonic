@@ -569,6 +569,47 @@ public class SubsonicApiController : ControllerBase
         return BuildOutput(new SubsonicResponse { ResponseData = userResponseData });
     }
 
+    /// <summary>
+    /// Get artist info.
+    /// </summary>
+    /// <returns>A Subsonic user response.</returns>
+    [HttpGet]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Route("getArtistInfo")]
+    [Route("getArtistInfo.view")]
+    [Route("getArtistInfo2")]
+    [Route("getArtistInfo2.view")]
+    public ActionResult GetArtistInfo()
+    {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var requestParams = GetRequestParams();
+        var artist = _jellyfinHelper.GetArtistById(requestParams.Id);
+        if (artist == null)
+        {
+            var err = new SubsonicError("error when retrieving artist", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        IResponseData artistInfoResponseData;
+        if (Request.Path.ToUriComponent().Contains("getArtistInfo2", StringComparison.InvariantCulture))
+        {
+            artistInfoResponseData = new ArtistInfo2();
+        }
+        else
+        {
+            artistInfoResponseData = new ArtistInfo();
+        }
+
+        return BuildOutput(new SubsonicResponse { ResponseData = artistInfoResponseData });
+    }
+
     private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError()
     {
         var requestParams = GetRequestParams();

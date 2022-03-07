@@ -86,6 +86,8 @@ public class SubsonicResponse
     [XmlElement("searchresult2", typeof(SearchResult2))]
     [XmlElement("searchresult3", typeof(SearchResult3))]
     [XmlElement("user", typeof(SubsonicUser))]
+    [XmlElement("artistInfo", typeof(ArtistInfo))]
+    [XmlElement("artistInfo2", typeof(ArtistInfo2))]
     public object? ResponseDataSerialization
     {
         get { return ResponseData; }

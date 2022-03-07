@@ -90,8 +90,8 @@ Any management of the libraries, server or user(s) is the responsibility of the 
 | getSong           | yes         |                                     |
 | getVideos         | no          | out of project scope                |
 | getVideoInfo      | no          | out of project scope                |
-| getArtistInfo     | no          | planned                             |
-| getArtistInfo2    | no          | planned                             |
+| getArtistInfo     | partial     | returns empty data                  |
+| getArtistInfo2    | partial     | returns empty data                  |
 | getAlbumInfo      | no          | planned                             |
 | getAlbumInfo2     | no          | planned                             |
 | getSimilarSongs   | no          | not planned                         |
