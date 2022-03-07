@@ -505,6 +505,13 @@ public class SubsonicApiController : ControllerBase
     [Route("search3.view")]
     public ActionResult Search()
     {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
         var artists = PerformSearch("artists");
         if (artists == null)
         {
