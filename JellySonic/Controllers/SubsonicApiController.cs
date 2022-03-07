@@ -460,6 +460,13 @@ public class SubsonicApiController : ControllerBase
     [Route("getAlbumList2.view")]
     public ActionResult GetAlbumList()
     {
+        var user = AuthenticateUser();
+        if (user == null)
+        {
+            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
         var (albums, error) = GetAlbumsOrError();
         if (error != null)
         {
