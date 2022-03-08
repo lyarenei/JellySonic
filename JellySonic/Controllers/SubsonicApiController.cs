@@ -459,6 +459,18 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
+        if (!string.IsNullOrEmpty(GetRequestParams().IfModifiedSince))
+        {
+            var lastModified = artists.Max(artist => artist.DateModified);
+            var ifModifiedSince = Convert.ToInt64(GetRequestParams().IfModifiedSince, NumberFormatInfo.InvariantInfo);
+            var ifModifiedSinceDt = DateTimeOffset.FromUnixTimeMilliseconds(ifModifiedSince);
+
+            if (ifModifiedSinceDt >= lastModified)
+            {
+                return BuildOutput(new SubsonicResponse());
+            }
+        }
+
         var songs = _jellyfinHelper.GetAllSongs(musicFolderId);
 
         var indexesResponseData = new Indexes(artists, songs);

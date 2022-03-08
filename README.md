@@ -78,25 +78,25 @@ Any management of the libraries, server or user(s) is the responsibility of the 
 <details>
   <summary>Browsing</summary>
 
-| endpoint          | implemented | notes                                     |
-|-------------------|-------------|-------------------------------------------|
-| getMusicFolders   | yes         |                                           |
-| getIndexes        | partial     | ifModifiedSince parameter not implemented |
-| getMusicDirectory | yes         |                                           |
-| getGenres         | yes         |                                           |
-| getArtists        | yes         |                                           |
-| getArtist         | yes         |                                           |
-| getAlbum          | yes         |                                           |
-| getSong           | yes         |                                           |
-| getVideos         | no          | out of project scope                      |
-| getVideoInfo      | no          | out of project scope                      |
-| getArtistInfo     | partial     | returns empty data                        |
-| getArtistInfo2    | partial     | returns empty data                        |
-| getAlbumInfo      | no          | planned                                   |
-| getAlbumInfo2     | no          | planned                                   |
-| getSimilarSongs   | no          | not planned                               |
-| getSimilarSongs2  | no          | not planned                               |
-| getTopSongs       | no          | not planned                               |
+| endpoint          | implemented | notes                |
+|-------------------|-------------|----------------------|
+| getMusicFolders   | yes         |                      |
+| getIndexes        | yes         |                      |
+| getMusicDirectory | yes         |                      |
+| getGenres         | yes         |                      |
+| getArtists        | yes         |                      |
+| getArtist         | yes         |                      |
+| getAlbum          | yes         |                      |
+| getSong           | yes         |                      |
+| getVideos         | no          | out of project scope |
+| getVideoInfo      | no          | out of project scope |
+| getArtistInfo     | partial     | returns empty data   |
+| getArtistInfo2    | partial     | returns empty data   |
+| getAlbumInfo      | no          | planned              |
+| getAlbumInfo2     | no          | planned              |
+| getSimilarSongs   | no          | not planned          |
+| getSimilarSongs2  | no          | not planned          |
+| getTopSongs       | no          | not planned          |
 
 </details>
 
