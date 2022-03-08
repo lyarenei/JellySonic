@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -153,12 +154,7 @@ public class JellyfinHelper
             return null;
         }
 
-        var artists = new List<MusicArtist>();
-        foreach (var (item, _) in queryData.Items)
-        {
-            artists.Add((MusicArtist)item);
-        }
-
+        var artists = queryData.Items.Select(tuple => tuple.Item).Cast<MusicArtist>().ToList();
         return new Collection<MusicArtist>(artists);
     }
 
