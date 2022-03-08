@@ -76,7 +76,13 @@ public class SubsonicApiController : ControllerBase
 
         if (!string.IsNullOrEmpty(requestParams.Password))
         {
-            return requestParams.Password == jsUser.Password ? user : null;
+            var password = requestParams.Password;
+            if (password.Contains("enc:", StringComparison.InvariantCulture))
+            {
+                password = Utils.Utils.HexToAscii(password[4..]);
+            }
+
+            return password == jsUser.Password ? user : null;
         }
 
         _logger.LogDebug("Cannot authenticate user - token/salt or password missing");
