@@ -128,16 +128,23 @@ public class JellyfinHelper
 
     /// <summary>
     /// Get all artists.
+    /// If musicFolderId parameter is not null, only include artists from this folder.
     /// </summary>
     /// <param name="user">User performing the query.</param>
+    /// <param name="musicFolderId">ID folder to operate with.</param>
     /// <returns>List of artists. Null if error.</returns>
-    public IEnumerable<MusicArtist>? GetArtists(User user)
+    public IEnumerable<MusicArtist>? GetArtists(User user, string? musicFolderId = null)
     {
         var query = new InternalItemsQuery
         {
             OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-            Recursive = true
+            Recursive = true,
         };
+
+        if (musicFolderId != null)
+        {
+            query.TopParentIds = new[] { new Guid(musicFolderId) };
+        }
 
         query.SetUser(user);
         var queryData = _libraryManager.GetAlbumArtists(query);

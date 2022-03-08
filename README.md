@@ -84,7 +84,7 @@ Any management of the libraries, server or user(s) is the responsibility of the 
 | getIndexes        | partial     | optional parameters not implemented |
 | getMusicDirectory | yes         |                                     |
 | getGenres         | yes         |                                     |
-| getArtists        | partial     | musicFolderId not implemented       |
+| getArtists        | yes         |                                     |
 | getArtist         | yes         |                                     |
 | getAlbum          | yes         |                                     |
 | getSong           | yes         |                                     |

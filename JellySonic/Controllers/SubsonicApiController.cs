@@ -185,7 +185,13 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var artists = _jellyfinHelper.GetArtists(user);
+        string? musicFolderId = GetRequestParams().MusicFolderId;
+        if (string.IsNullOrEmpty(musicFolderId))
+        {
+            musicFolderId = null;
+        }
+
+        var artists = _jellyfinHelper.GetArtists(user, musicFolderId);
         if (artists == null)
         {
             var err = new SubsonicError("error when retrieving artists", ErrorCodes.Generic);
