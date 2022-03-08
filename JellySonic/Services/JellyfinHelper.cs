@@ -181,9 +181,11 @@ public class JellyfinHelper
 
     /// <summary>
     /// Get all songs.
+    /// If musicFolderId parameter is set, only include songs from this folder.
     /// </summary>
+    /// <param name="musicFolderId">ID of music folder.</param>
     /// <returns>Collection of all songs in the library.</returns>
-    public IEnumerable<BaseItem> GetAllSongs()
+    public IEnumerable<BaseItem> GetAllSongs(string? musicFolderId = null)
     {
         var query = new InternalItemsQuery
         {
@@ -191,6 +193,11 @@ public class JellyfinHelper
             OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
             Recursive = true
         };
+
+        if (!string.IsNullOrEmpty(musicFolderId))
+        {
+            query.TopParentIds = new[] { new Guid(musicFolderId) };
+        }
 
         return _libraryManager.GetItemList(query);
     }

@@ -446,14 +446,20 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var artists = _jellyfinHelper.GetArtists(user);
+        string? musicFolderId = GetRequestParams().MusicFolderId;
+        if (string.IsNullOrEmpty(musicFolderId))
+        {
+            musicFolderId = null;
+        }
+
+        var artists = _jellyfinHelper.GetArtists(user, musicFolderId);
         if (artists == null)
         {
             var err = new SubsonicError("error when retrieving artists", ErrorCodes.Generic);
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var songs = _jellyfinHelper.GetAllSongs();
+        var songs = _jellyfinHelper.GetAllSongs(musicFolderId);
 
         var indexesResponseData = new Indexes(artists, songs);
         return BuildOutput(new SubsonicResponse { ResponseData = indexesResponseData });
