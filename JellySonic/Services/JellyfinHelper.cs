@@ -132,8 +132,8 @@ public class JellyfinHelper
     /// </summary>
     /// <param name="user">User performing the query.</param>
     /// <param name="musicFolderId">ID folder to operate with.</param>
-    /// <returns>List of artists. Null if error.</returns>
-    public IEnumerable<MusicArtist>? GetArtists(User user, string? musicFolderId = null)
+    /// <returns>Collection of artists. Null if error.</returns>
+    public Collection<MusicArtist>? GetArtists(User user, string? musicFolderId = null)
     {
         var query = new InternalItemsQuery
         {
@@ -159,7 +159,7 @@ public class JellyfinHelper
             artists.Add((MusicArtist)item);
         }
 
-        return artists;
+        return new Collection<MusicArtist>(artists);
     }
 
     /// <summary>
