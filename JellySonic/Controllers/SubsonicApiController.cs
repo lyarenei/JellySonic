@@ -152,6 +152,13 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
+        var missingParam = GetRequestParams().RequiredParamsMissing("id");
+        if (!string.IsNullOrEmpty(missingParam))
+        {
+            var err = new SubsonicError($"required parameter missing: {missingParam}", ErrorCodes.MissingParam);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
         var artist = _jellyfinHelper.GetArtistById(GetRequestParams().Id);
         if (artist == null)
         {
@@ -839,6 +846,44 @@ public class SubsonicParams
     public bool TokenAuthPossible()
     {
         return !string.IsNullOrEmpty(Token) && !string.IsNullOrEmpty(Salt);
+    }
+
+    /// <summary>
+    /// Check if required request parameters are missing.
+    /// </summary>
+    /// <returns>One or more required parameters are missing.</returns>
+    public bool RequiredParamsMissing()
+    {
+        var authPossible = TokenAuthPossible() || !string.IsNullOrEmpty(Password);
+        return string.IsNullOrEmpty(Username) ||
+               string.IsNullOrEmpty(Version) ||
+               string.IsNullOrEmpty(Client) ||
+               string.IsNullOrEmpty(Format) ||
+               !authPossible;
+    }
+
+    /// <summary>
+    /// Check if required request parameters are missing.
+    /// </summary>
+    /// <param name="additionalParams">Additional parameter names which must be set.</param>
+    /// <returns>A name of required parameter which has no value. Empty if all parameters have value.</returns>
+    public string RequiredParamsMissing(params string[] additionalParams)
+    {
+        var lowercaseAdditionalParams = additionalParams.Select(param => param.ToLower(CultureInfo.InvariantCulture)).ToList();
+        foreach (var property in this.GetType().GetProperties())
+        {
+            var propValue = (string?)property.GetValue(this);
+            var propName = property.Name.ToLower(CultureInfo.InvariantCulture);
+            if (
+                string.IsNullOrEmpty(propValue) &&
+                lowercaseAdditionalParams.Contains(propName)
+            )
+            {
+                return propName;
+            }
+        }
+
+        return RequiredParamsMissing() ? "one of common parameters (username, client, etc...)" : string.Empty;
     }
 
 #pragma warning disable CS1591
