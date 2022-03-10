@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using JellySonic.Types;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 
 namespace JellySonic.Models;
 
@@ -111,10 +112,10 @@ public class ArtistWithAlbumsId3 : ArtistId3, IResponseData
     /// Initializes a new instance of the <see cref="ArtistWithAlbumsId3"/> class.
     /// </summary>
     /// <param name="artist">Artist data.</param>
-    /// <param name="albums">Album collection for artist.</param>
-    public ArtistWithAlbumsId3(BaseItem artist, IEnumerable<BaseItem> albums) : base(artist)
+    public ArtistWithAlbumsId3(MusicArtist artist) : base(artist)
     {
-        Albums = albums.Select(album => new AlbumId3(album)).ToList();
+        Albums = artist.Children.Select(album => new AlbumId3(album)).ToList();
+        AlbumCount = artist.Children.Count();
     }
 
     /// <summary>

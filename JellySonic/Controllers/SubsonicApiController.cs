@@ -159,17 +159,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
-        var albums = _jellyfinHelper.GetAlbumsByArtistId(user, artist.Id);
-        if (albums == null)
-        {
-            var err = new SubsonicError("error when searching albums", ErrorCodes.Generic);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var artistsResponseData = new ArtistWithAlbumsId3(artist, albums)
-        {
-            AlbumCount = albums.Count()
-        };
+        var artistsResponseData = new ArtistWithAlbumsId3(artist);
         return BuildOutput(new SubsonicResponse { ResponseData = artistsResponseData });
     }
 
