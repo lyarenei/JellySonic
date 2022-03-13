@@ -4,8 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Threading;
-using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using JellySonic.Models;
 using JellySonic.Services;
@@ -40,13 +38,130 @@ public class SubsonicApiController : ControllerBase
         _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager);
     }
 
+    private delegate ActionResult SubsonicAction(User user, SubsonicParams subsonicParams);
+
+    /// <summary>
+    /// API Middleware workaround.
+    /// Catches all requests and then calls methods according to the path.
+    /// </summary>
+    /// <param name="action">Controller action name.</param>
+    /// <returns>Data response. Varies with endpoint.</returns>
+    [HttpGet]
+    [HttpPost]
+    [Route("{*action}")]
+    public ActionResult SubsonicApiMiddleware(string action)
+    {
+        SubsonicError? err;
+        var requestParams = GetRequestParams();
+        if (requestParams.RequiredParamsMissing())
+        {
+            err = new SubsonicError("required common parameter (username, client, ...) missing", ErrorCodes.MissingParam);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        var user = AuthenticateUser(requestParams);
+        if (user == null)
+        {
+            err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
+            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+        }
+
+        string missingParam;
+        SubsonicAction subsonicAction;
+        string methodName = GetMethodName();
+        switch (methodName)
+        {
+            case "getAlbum":
+                missingParam = requestParams.RequiredParamsMissing("id");
+                subsonicAction = GetAlbum;
+                break;
+            case "getArtist":
+                missingParam = requestParams.RequiredParamsMissing("id");
+                subsonicAction = GetArtist;
+                break;
+            case "getArtists":
+                missingParam = string.Empty;
+                subsonicAction = GetArtists;
+                break;
+            case "ping":
+                missingParam = string.Empty;
+                subsonicAction = Ping;
+                break;
+            case "getLicense":
+                missingParam = string.Empty;
+                subsonicAction = GetLicense;
+                break;
+            case "getSong":
+                missingParam = requestParams.RequiredParamsMissing("id");
+                subsonicAction = GetSong;
+                break;
+            case "getMusicFolders":
+                missingParam = string.Empty;
+                subsonicAction = GetMusicFolders;
+                break;
+            case "getMusicDirectory":
+                missingParam = requestParams.RequiredParamsMissing("id");
+                subsonicAction = GetMusicDirectory;
+                break;
+            case "getCoverArt":
+                missingParam = requestParams.RequiredParamsMissing("id");
+                subsonicAction = GetCoverArt;
+                break;
+            case "download":
+            case "stream":
+                missingParam = requestParams.RequiredParamsMissing("id");
+                subsonicAction = Download;
+                break;
+            case "getGenres":
+                missingParam = string.Empty;
+                subsonicAction = GetGenres;
+                break;
+            case "getIndexes":
+                missingParam = string.Empty;
+                subsonicAction = GetIndexes;
+                break;
+            case "getAlbumList":
+            case "getAlbumList2":
+                missingParam = requestParams.RequiredParamsMissing("type");
+                subsonicAction = GetAlbumList;
+                break;
+            case "search2":
+            case "search3":
+                missingParam = requestParams.RequiredParamsMissing("query");
+                subsonicAction = Search;
+                break;
+            case "getUser":
+                missingParam = requestParams.RequiredParamsMissing("username");
+                subsonicAction = GetSubsonicUser;
+                break;
+            case "getArtistInfo":
+            case "getArtistInfo2":
+                missingParam = requestParams.RequiredParamsMissing("id");
+                subsonicAction = GetArtistInfo;
+                break;
+            default:
+                _logger.LogDebug("method {MethodName} not found", methodName);
+                missingParam = string.Empty;
+                subsonicAction = (_, _) => NotFound();
+                break;
+        }
+
+        if (string.IsNullOrEmpty(missingParam))
+        {
+            return subsonicAction(user, requestParams);
+        }
+
+        err = new SubsonicError($"required parameter missing: {missingParam}", ErrorCodes.MissingParam);
+        return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
+    }
+
     /// <summary>
     /// Authenticate user in Jellyfin.
     /// </summary>
+    /// <param name="requestParams">Request parameters.</param>
     /// <returns>User instance if authentication is successful. Null otherwise.</returns>
-    public User? AuthenticateUser()
+    private User? AuthenticateUser(SubsonicParams requestParams)
     {
-        var requestParams = GetRequestParams();
         var user = _jellyfinHelper.GetUserByUsername(requestParams.Username);
 
         var jsUser = JellySonic.Instance?.Configuration.Users
@@ -94,7 +209,7 @@ public class SubsonicApiController : ControllerBase
     /// </summary>
     /// <param name="subsonicResponse">Data used to build the response.</param>
     /// <returns>Output file.</returns>
-    public FileStreamResult BuildOutput(SubsonicResponse subsonicResponse)
+    private FileStreamResult BuildOutput(SubsonicResponse subsonicResponse)
     {
         var format = SubsonicResponse.FormatFromString(GetRequestParams().Format);
         var memoryStream = subsonicResponse.ToMemoryStream(format);
@@ -108,22 +223,12 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get an album.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>Found album or error.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getAlbum")]
-    [Route("getAlbum.view")]
-    public ActionResult GetAlbum()
+    private ActionResult GetAlbum(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var album = _jellyfinHelper.GetAlbumById(GetRequestParams().Id);
+        var album = _jellyfinHelper.GetAlbumById(subsonicParams.Id);
         if (album == null)
         {
             var err = new SubsonicError("album not found", ErrorCodes.DataNotFound);
@@ -137,29 +242,12 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get an artist.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>Found artist or error.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getArtist")]
-    [Route("getArtist.view")]
-    public ActionResult GetArtist()
+    private ActionResult GetArtist(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var missingParam = GetRequestParams().RequiredParamsMissing("id");
-        if (!string.IsNullOrEmpty(missingParam))
-        {
-            var err = new SubsonicError($"required parameter missing: {missingParam}", ErrorCodes.MissingParam);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var artist = _jellyfinHelper.GetArtistById(GetRequestParams().Id);
+        var artist = _jellyfinHelper.GetArtistById(subsonicParams.Id);
         if (artist == null)
         {
             var err = new SubsonicError("artist not found", ErrorCodes.DataNotFound);
@@ -173,22 +261,12 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get all artists.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>Artists Subsonic response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getArtists")]
-    [Route("getArtists.view")]
-    public ActionResult GetArtists()
+    private ActionResult GetArtists(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        string? musicFolderId = GetRequestParams().MusicFolderId;
+        string? musicFolderId = subsonicParams.MusicFolderId;
         if (string.IsNullOrEmpty(musicFolderId))
         {
             musicFolderId = null;
@@ -208,13 +286,10 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Used to test connectivity with the server.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>Empty Subsonic response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("ping")]
-    [Route("ping.view")]
-    public ActionResult Ping()
+    private ActionResult Ping(User user, SubsonicParams subsonicParams)
     {
         _logger.LogDebug("received ping request");
         return BuildOutput(new SubsonicResponse());
@@ -223,49 +298,24 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get details about the Subsonic software license.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic <see cref="License"/> response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getLicense")]
-    [Route("getLicense.view")]
-    public ActionResult GetLicense()
+    private ActionResult GetLicense(User user, SubsonicParams subsonicParams)
     {
         _logger.LogDebug("received getLicense request");
-
-        SubsonicResponse resp;
-        if (AuthenticateUser() != null)
-        {
-            resp = new SubsonicResponse { ResponseData = new License() };
-        }
-        else
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            resp = new SubsonicResponse("failed") { ResponseData = err };
-        }
-
-        return BuildOutput(resp);
+        return BuildOutput(new SubsonicResponse { ResponseData = new License() });
     }
 
     /// <summary>
     /// Get a song.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A subsonic <see cref="Child"/> response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getSong")]
-    [Route("getSong.view")]
-    public ActionResult GetSong()
+    private ActionResult GetSong(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse { ResponseData = err });
-        }
-
-        var song = _jellyfinHelper.GetSongById(GetRequestParams().Id);
+        var song = _jellyfinHelper.GetSongById(subsonicParams.Id);
         if (song == null)
         {
             var err = new SubsonicError("song not found", ErrorCodes.DataNotFound);
@@ -279,21 +329,11 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get all music folders.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic music folders response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getMusicFolders")]
-    [Route("getMusicFolders.view")]
-    public ActionResult GetMusicFolders()
+    private ActionResult GetMusicFolders(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
         var folders = _jellyfinHelper.GetFolders(user);
         if (folders == null)
         {
@@ -308,22 +348,12 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get all music folders.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic music folders response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getMusicDirectory")]
-    [Route("getMusicDirectory.view")]
-    public ActionResult GetMusicDirectory()
+    private ActionResult GetMusicDirectory(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var directory = _jellyfinHelper.GetDirectoryById(GetRequestParams().Id);
+        var directory = _jellyfinHelper.GetDirectoryById(subsonicParams.Id);
         if (directory == null)
         {
             var err = new SubsonicError("directory not found", ErrorCodes.DataNotFound);
@@ -337,23 +367,12 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get cover art.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>Cover art as binary data.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [Route("getCoverArt")]
-    [Route("getCoverArt.view")]
-    public ActionResult GetCoverArt()
+    private ActionResult GetCoverArt(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var item = _jellyfinHelper.GetItemById(GetRequestParams().Id);
+        var item = _jellyfinHelper.GetItemById(subsonicParams.Id);
         if (string.IsNullOrEmpty(item?.PrimaryImagePath))
         {
             return NoContent();
@@ -366,24 +385,12 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Download an item.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>Item as binary data.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("download")]
-    [Route("download.view")]
-    [Route("stream")]
-    [Route("stream.view")]
-    public async Task<ActionResult> Download()
+    private ActionResult Download(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var item = _jellyfinHelper.GetItemById(GetRequestParams().Id);
+        var item = _jellyfinHelper.GetItemById(subsonicParams.Id);
         if (item == null)
         {
             var err = new SubsonicError("item not found", ErrorCodes.DataNotFound);
@@ -391,29 +398,17 @@ public class SubsonicApiController : ControllerBase
         }
 
         var fs = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
-        byte[] content = new byte[fs.Length];
-        await fs.ReadAsync(content, CancellationToken.None).ConfigureAwait(false);
-        return new FileContentResult(content, Utils.Utils.GetMimeType(item.Path));
+        return new FileStreamResult(fs, Utils.Utils.GetMimeType(item.Path));
     }
 
     /// <summary>
     /// Get genres.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic genres response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getGenres")]
-    [Route("getGenres.view")]
-    public ActionResult GetGenres()
+    private ActionResult GetGenres(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
         var artists = _jellyfinHelper.GetArtists(user);
         if (artists == null)
         {
@@ -428,22 +423,12 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get indexes.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic indexes response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getIndexes")]
-    [Route("getIndexes.view")]
-    public ActionResult GetIndexes()
+    private ActionResult GetIndexes(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        string? musicFolderId = GetRequestParams().MusicFolderId;
+        string? musicFolderId = subsonicParams.MusicFolderId;
         if (string.IsNullOrEmpty(musicFolderId))
         {
             musicFolderId = null;
@@ -477,24 +462,12 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get album list.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic album list or album list 2 response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getAlbumList")]
-    [Route("getAlbumList.view")]
-    [Route("getAlbumList2")]
-    [Route("getAlbumList2.view")]
-    public ActionResult GetAlbumList()
+    private ActionResult GetAlbumList(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
-        var (albums, error) = GetAlbumsOrError();
+        var (albums, error) = GetAlbumsOrError(user);
         if (error != null)
         {
             return error;
@@ -522,23 +495,11 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get items matching a search query.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic search result 2 or 3 response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("search2")]
-    [Route("search2.view")]
-    [Route("search3")]
-    [Route("search3.view")]
-    public ActionResult Search()
+    private ActionResult Search(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
         var artists = PerformSearch("artists");
         if (artists == null)
         {
@@ -576,21 +537,11 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get user with specified ID.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic user response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getUser")]
-    [Route("getUser.view")]
-    public ActionResult GetSubsonicUser()
+    private ActionResult GetSubsonicUser(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
         var jellyfinUser = _jellyfinHelper.GetUserByUsername(GetRequestParams().Username);
         var userResponseData = new SubsonicUser(jellyfinUser);
         return BuildOutput(new SubsonicResponse { ResponseData = userResponseData });
@@ -599,23 +550,11 @@ public class SubsonicApiController : ControllerBase
     /// <summary>
     /// Get artist info.
     /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
     /// <returns>A Subsonic user response.</returns>
-    [HttpGet]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Route("getArtistInfo")]
-    [Route("getArtistInfo.view")]
-    [Route("getArtistInfo2")]
-    [Route("getArtistInfo2.view")]
-    public ActionResult GetArtistInfo()
+    private ActionResult GetArtistInfo(User user, SubsonicParams subsonicParams)
     {
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
-        }
-
         var requestParams = GetRequestParams();
         var artist = _jellyfinHelper.GetArtistById(requestParams.Id);
         if (artist == null)
@@ -637,16 +576,9 @@ public class SubsonicApiController : ControllerBase
         return BuildOutput(new SubsonicResponse { ResponseData = artistInfoResponseData });
     }
 
-    private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError()
+    private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError(User user)
     {
         var requestParams = GetRequestParams();
-        var user = AuthenticateUser();
-        if (user == null)
-        {
-            var err = new SubsonicError("invalid credentials", ErrorCodes.InvalidCredentials);
-            return (null, BuildOutput(new SubsonicResponse("failed") { ResponseData = err }));
-        }
-
         string type = requestParams.Type;
         if (!int.TryParse(requestParams.Size, out var size))
         {
@@ -759,6 +691,22 @@ public class SubsonicApiController : ControllerBase
     private SubsonicParams GetRequestParams()
     {
         return Request.Method == "GET" ? new SubsonicParams(Request.Query) : new SubsonicParams(Request.Form);
+    }
+
+    private string GetMethodName()
+    {
+        var method = Request.Path.ToString().Split("/").LastOrDefault(string.Empty);
+        if (string.IsNullOrEmpty(method))
+        {
+            return string.Empty;
+        }
+
+        if (method.Contains('.', StringComparison.InvariantCulture))
+        {
+            return method.Split('.').First();
+        }
+
+        return method;
     }
 }
 
