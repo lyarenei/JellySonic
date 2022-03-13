@@ -114,7 +114,7 @@ public class JellyfinHelper
     /// <returns>List of found albums. Null if error.</returns>
     public IEnumerable<MusicAlbum>? GetAlbumsByArtistId(User user, Guid artistId)
     {
-        var query = new InternalItemsQuery
+        var query = new InternalItemsQuery(user)
         {
             IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
             AlbumArtistIds = new[] { artistId },
@@ -122,7 +122,6 @@ public class JellyfinHelper
             Recursive = true
         };
 
-        query.SetUser(user);
         var queryData = _libraryManager.GetItemList(query);
         return queryData?.Cast<MusicAlbum>().ToList();
     }
@@ -136,7 +135,7 @@ public class JellyfinHelper
     /// <returns>Collection of artists. Null if error.</returns>
     public Collection<MusicArtist>? GetArtists(User user, string? musicFolderId = null)
     {
-        var query = new InternalItemsQuery
+        var query = new InternalItemsQuery(user)
         {
             OrderBy = new (string, SortOrder)[] { (ItemSortBy.SortName, SortOrder.Ascending) },
             Recursive = true,
@@ -147,7 +146,6 @@ public class JellyfinHelper
             query.TopParentIds = new[] { new Guid(musicFolderId) };
         }
 
-        query.SetUser(user);
         var queryData = _libraryManager.GetAlbumArtists(query);
         if (queryData == null)
         {
@@ -205,7 +203,7 @@ public class JellyfinHelper
     /// <returns>List of folders. Null if error.</returns>
     public IEnumerable<Folder>? GetFolders(User user)
     {
-        var query = new InternalItemsQuery
+        var query = new InternalItemsQuery(user)
         {
             IncludeItemTypes = new[] { BaseItemKind.Folder },
             SourceTypes = new[] { SourceType.Library },
@@ -213,7 +211,6 @@ public class JellyfinHelper
             Recursive = true
         };
 
-        query.SetUser(user);
         var queryData = _libraryManager.GetItemList(query);
         return queryData?.Cast<Folder>().ToList();
     }
