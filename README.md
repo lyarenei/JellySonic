@@ -121,8 +121,8 @@ Any management of the libraries, server or user(s) is the responsibility of the 
 | endpoint | implemented | notes                                            |
 |----------|-------------|--------------------------------------------------|
 | search   | no          | not planned - marked as deprecated in API schema |
-| search2  | partial     | musicFolderId parameter not implemented          |
-| search3  | partial     | musicFolderId parameter not implemented          |
+| search2  | yes         |                                                  |
+| search3  | yes         |                                                  |
 
 </details>
 

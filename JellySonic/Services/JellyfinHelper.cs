@@ -317,8 +317,9 @@ public class JellyfinHelper
     /// <param name="query">Search query.</param>
     /// <param name="count">Search result count. Default 20.</param>
     /// <param name="offset">Search result offset. Default 0.</param>
+    /// <param name="musicFolderId">Search only in specified folder. Default null = search in all folders.</param>
     /// <returns>A collection of items matching the query.</returns>
-    public IEnumerable<BaseItem>? Search(string searchType, string query, int count = 20, int offset = 0)
+    public IEnumerable<BaseItem>? Search(string searchType, string query, int count = 20, int offset = 0, string? musicFolderId = null)
     {
         BaseItemKind searchItem;
         switch (searchType)
@@ -337,7 +338,7 @@ public class JellyfinHelper
                 return new List<BaseItem>();
         }
 
-        return DoSearch(searchItem, query, count, offset);
+        return DoSearch(searchItem, query, count, offset, musicFolderId);
     }
 
     private IEnumerable<BaseItem>? GetAlbumsByParams(
@@ -382,7 +383,7 @@ public class JellyfinHelper
         return queryData?.ToList();
     }
 
-    private IEnumerable<BaseItem>? DoSearch(BaseItemKind searchItem, string queryString, int count, int offset)
+    private IEnumerable<BaseItem>? DoSearch(BaseItemKind searchItem, string queryString, int count, int offset, string? musicFolderId = null)
     {
         var query = new InternalItemsQuery
         {
@@ -394,6 +395,11 @@ public class JellyfinHelper
             StartIndex = offset,
             MinSimilarityScore = 20
         };
+
+        if (musicFolderId != null)
+        {
+            query.TopParentIds = new[] { new Guid(musicFolderId) };
+        }
 
         return _libraryManager.GetItemList(query);
     }
