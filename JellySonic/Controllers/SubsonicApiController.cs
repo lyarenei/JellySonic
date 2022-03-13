@@ -802,11 +802,11 @@ public class SubsonicParams
     /// <returns>One or more required parameters are missing.</returns>
     public bool RequiredParamsMissing()
     {
+        // Note: some clients do not send format parameter, so it's left out.
         var authPossible = TokenAuthPossible() || !string.IsNullOrEmpty(Password);
         return string.IsNullOrEmpty(Username) ||
                string.IsNullOrEmpty(Version) ||
                string.IsNullOrEmpty(Client) ||
-               string.IsNullOrEmpty(Format) ||
                !authPossible;
     }
 
