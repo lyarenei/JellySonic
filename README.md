@@ -103,15 +103,15 @@ Any management of the libraries, server or user(s) is the responsibility of the 
 <details>
   <summary>Album/song lists</summary>
 
-| endpoint        | implemented | notes                                                                |
-|-----------------|-------------|----------------------------------------------------------------------|
-| getAlbumList    | partial     | not implemented: frequent type and musicFolderId parameter           |
-| getAlbumList2   | partial     | uses implementation of getAlbumList => accepts same parameter values |
-| getRandomSongs  | no          | planned                                                              |
-| getSongsByGenre | no          | planned                                                              |
-| getNowPlaying   | no          | out of project scope                                                 |
-| getStarred      | no          | planned                                                              |
-| getStarred2     | no          | planned                                                              |
+| endpoint        | implemented | notes                              |
+|-----------------|-------------|------------------------------------|
+| getAlbumList    | partial     | frequent list type not implemented |
+| getAlbumList2   | partial     | same as getAlbumList               |
+| getRandomSongs  | no          | planned                            |
+| getSongsByGenre | no          | planned                            |
+| getNowPlaying   | no          | out of project scope               |
+| getStarred      | no          | planned                            |
+| getStarred2     | no          | planned                            |
 
 </details>
 

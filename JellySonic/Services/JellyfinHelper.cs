@@ -254,6 +254,7 @@ public class JellyfinHelper
     /// <param name="toYear">Include only albums released in specified year and earlier until year specified in <paramref name="fromYear"/>.
     /// Must not be null and has effect only if <paramref name="type"/> is set to byYear.</param>
     /// <param name="genre">Include only albums of specified genre. Has effect only if <paramref name="type"/> is set to byGenre.</param>
+    /// <param name="musicFolderId">Consider only albums in the specified folder.</param>
     /// <returns>A collection of items. Null if error.</returns>
     public IEnumerable<BaseItem>? GetAlbums(
         User user,
@@ -262,7 +263,8 @@ public class JellyfinHelper
         int offset = 0,
         int? fromYear = null,
         int? toYear = null,
-        string? genre = null)
+        string? genre = null,
+        string? musicFolderId = null)
     {
         string sortBy;
         SortOrder sortOrder = SortOrder.Ascending;
@@ -305,7 +307,7 @@ public class JellyfinHelper
                 return new List<BaseItem>();
         }
 
-        return GetAlbumsByParams(user, sortBy, sortOrder, size, offset, isLikedOrFav, years, genre);
+        return GetAlbumsByParams(user, sortBy, sortOrder, size, offset, isLikedOrFav, years, genre, musicFolderId);
     }
 
     /// <summary>
@@ -346,7 +348,8 @@ public class JellyfinHelper
         int offset = 0,
         bool? isLikedOrFav = null,
         int[]? years = null,
-        string? genre = null)
+        string? genre = null,
+        string? musicFolderId = null)
     {
         var query = new InternalItemsQuery(user)
         {
@@ -368,6 +371,11 @@ public class JellyfinHelper
         else if (!string.IsNullOrEmpty(genre))
         {
             query.Genres = new[] { genre };
+        }
+
+        if (musicFolderId != null)
+        {
+            query.TopParentIds = new[] { new Guid(musicFolderId) };
         }
 
         var queryData = _libraryManager.GetItemList(query);

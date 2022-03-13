@@ -467,7 +467,7 @@ public class SubsonicApiController : ControllerBase
     /// <returns>A Subsonic album list or album list 2 response.</returns>
     private ActionResult GetAlbumList(User user, SubsonicParams subsonicParams)
     {
-        var (albums, error) = GetAlbumsOrError(user);
+        var (albums, error) = GetAlbumsOrError(user, subsonicParams);
         if (error != null)
         {
             return error;
@@ -576,17 +576,16 @@ public class SubsonicApiController : ControllerBase
         return BuildOutput(new SubsonicResponse { ResponseData = artistInfoResponseData });
     }
 
-    private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError(User user)
+    private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError(User user, SubsonicParams subsonicParams)
     {
-        var requestParams = GetRequestParams();
-        string type = requestParams.Type;
-        if (!int.TryParse(requestParams.Size, out var size))
+        string type = subsonicParams.Type;
+        if (!int.TryParse(subsonicParams.Size, out var size))
         {
             _logger.LogWarning("Failed to parse size parameter as a number, will use default value");
             size = 10;
         }
 
-        if (!int.TryParse(requestParams.Offset, out var offset))
+        if (!int.TryParse(subsonicParams.Offset, out var offset))
         {
             _logger.LogWarning("Failed to parse offset as a number, will use default value");
             offset = 0;
@@ -594,16 +593,16 @@ public class SubsonicApiController : ControllerBase
 
         int? fromYear = null;
         int? toYear = null;
-        if (requestParams.Type == "byYear")
+        if (subsonicParams.Type == "byYear")
         {
-            if (!int.TryParse(requestParams.FromYear, out var fYear))
+            if (!int.TryParse(subsonicParams.FromYear, out var fYear))
             {
                 _logger.LogWarning("Failed to parse fromYear as a number");
                 var err = new SubsonicError("invalid fromYear parameter value", ErrorCodes.Generic);
                 return (null, BuildOutput(new SubsonicResponse("failed") { ResponseData = err }));
             }
 
-            if (!int.TryParse(requestParams.ToYear, out var tYear))
+            if (!int.TryParse(subsonicParams.ToYear, out var tYear))
             {
                 _logger.LogWarning("Failed to parse toYear as a number");
                 var err = new SubsonicError("invalid toYear parameter value", ErrorCodes.Generic);
@@ -615,9 +614,9 @@ public class SubsonicApiController : ControllerBase
         }
 
         string? genre = null;
-        if (requestParams.Type == "byGenre")
+        if (subsonicParams.Type == "byGenre")
         {
-            genre = requestParams.Genre;
+            genre = subsonicParams.Genre;
             if (string.IsNullOrEmpty(genre))
             {
                 _logger.LogWarning("Genre parameter must be set if type parameter is set to byGenre");
@@ -626,7 +625,13 @@ public class SubsonicApiController : ControllerBase
             }
         }
 
-        var albums = _jellyfinHelper.GetAlbums(user, type, size, offset, fromYear, toYear, genre);
+        string? musciFolderId = subsonicParams.MusicFolderId;
+        if (string.IsNullOrEmpty(musciFolderId))
+        {
+            musciFolderId = null;
+        }
+
+        var albums = _jellyfinHelper.GetAlbums(user, type, size, offset, fromYear, toYear, genre, musciFolderId);
         return (albums, null);
     }
 
