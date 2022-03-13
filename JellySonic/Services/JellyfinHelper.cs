@@ -111,8 +111,8 @@ public class JellyfinHelper
     /// </summary>
     /// <param name="user">User performing the query.</param>
     /// <param name="artistId">ID of the artist.</param>
-    /// <returns>List of found albums. Null if error.</returns>
-    public IEnumerable<MusicAlbum>? GetAlbumsByArtistId(User user, Guid artistId)
+    /// <returns>Collection of found albums. Null if error.</returns>
+    public Collection<MusicAlbum>? GetAlbumsByArtistId(User user, Guid artistId)
     {
         var query = new InternalItemsQuery(user)
         {
@@ -123,7 +123,7 @@ public class JellyfinHelper
         };
 
         var queryData = _libraryManager.GetItemList(query);
-        return queryData?.Cast<MusicAlbum>().ToList();
+        return queryData == null ? null : new Collection<MusicAlbum>(queryData.Cast<MusicAlbum>().ToList());
     }
 
     /// <summary>
