@@ -28,7 +28,7 @@ jobs:
             dotnet-target: net6.0
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build-artifact
           retention-days: 30
