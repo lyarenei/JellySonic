@@ -3,37 +3,30 @@ An **experimental** subsonic plugin for Jellyfin.
 
 This plugin enables your Jellyfin server to serve Subsonic clients.
 
-### A note about authentication
+### Implemented Endpoints
+See [here](doc/endpoints.md).
+
+### Subsonic authentication
 As the Subsonic authentication mechanism is pretty much insecure (the password is secured in transit at best),
 this plugin does not use Jellyfin user passwords to authorize Subsonic requests.
-This is because in one way or another the password is leaked:
-- When using token auth, the server needs an access to the password in order to compute hash for comparison
-- When using legacy auth, the password is sent with the request (obfuscated at best)
+This is because either way the password is available in plaintext:
+- When using token auth, the server needs an access to the password in order to generate the token for comparison
+- When using legacy auth, the password is sent with the request (optionally obfuscated in hex)
 
 
-In both cases, the password is still somewhere shown in plaintext, so this plugin explicitly requires administrator
-to set a Subsonic password for their users, so they can successfully authenticate their requests.
-Please keep in mind, this password is stored in plaintext, as described above.
-There is no point in obfuscating it, as it would be easily recoverable and
-the server administrator knows the password anyway, in order to set it.
-If a potential attacker has an access to the plugin configuration file, you have much bigger problems than to
-worry about leaking users passwords (which essentially allows read only access to music on your server via Subsonic API).
+Because of that the plugin explicitly requires administrator to set a Subsonic password for their users,
+so they can authenticate with the server. This password must be stored in plaintext, as described above. Please keep that in mind.
 
-Naturally, as with any passwords, the general rules apply. Except the complexity, probably.
-
-As Jellyfin plugins cannot implement user-facing plugin configurations (or at least I don't know about any solutions),
-the server administrator must configure any user who wants to use the Subsonic plugin.
 To configure the user, refer to [config](#configuration) section below.
+Although there are no password requirements enforced, the password should not be the same as the Jellyfin user password.
 
 ## Installation
 
 The plugin can be installed either via repository or [manually](#manual-build-and-installation).
 
-After installation, do not forget to configure the plugin as mentioned in the note above.
+After installation, do not forget to **configure** the plugin as mentioned in the note above.
 
 ### Repo Install
-
-Jellyfin 10.6.0 introduced 3rd party plugin repositories (see: [announcement](https://jellyfin.org/posts/plugin-updates/)), configure the following to follow stable builds for this plugin:
 
 - Repo name: JellySonic (or whatever, can be anything)
 - Repo URL: `https://raw.githubusercontent.com/lyarenei/JellySonic/master/manifest.json`
@@ -44,7 +37,7 @@ Install your preferred version and restart the server as asked.
 ### Configuration
 
 To configure a user:
-1. Open plugin settings
+1. Navigate to plugin settings
 2. Select the user you want to configure
 3. Set a password for authentication
 
@@ -53,214 +46,6 @@ The only requirement is that it should not be the same as the user's Jellyfin pa
 
 After saving the configuration, the user should be able to authenticate with the password set in the plugin configuration.
 The user can use both token and password method, although the token method is preferred.
-
-
-## Implemented Endpoints
-The state of endpoints implementation can be found in the tables below.
-Click on each endpoint type reveal the tables.
-If you have found any issues, please check the implementation state before opening an issue.
-
-The current scope is to implement such endpoints to allow clients to provide basic/minimal, but reasonable user experience.
-
-The primary aim of this plugin is to serve the subsonic clients for _music_ playback.
-Any management of the libraries, server or user(s) is the responsibility of the Jellyfin server.
-
-<details>
-  <summary>System</summary>
-
-| endpoint   | implemented | notes |
-|------------|-------------|-------|
-| ping       | yes         |       |
-| getLicense | yes         |       |
-
-</details>
-
-<details>
-  <summary>Browsing</summary>
-
-| endpoint          | implemented | notes                |
-|-------------------|-------------|----------------------|
-| getMusicFolders   | yes         |                      |
-| getIndexes        | yes         |                      |
-| getMusicDirectory | yes         |                      |
-| getGenres         | yes         |                      |
-| getArtists        | yes         |                      |
-| getArtist         | yes         |                      |
-| getAlbum          | yes         |                      |
-| getSong           | yes         |                      |
-| getVideos         | no          | out of project scope |
-| getVideoInfo      | no          | out of project scope |
-| getArtistInfo     | partial     | returns empty data   |
-| getArtistInfo2    | partial     | returns empty data   |
-| getAlbumInfo      | no          | planned              |
-| getAlbumInfo2     | no          | planned              |
-| getSimilarSongs   | no          | not planned          |
-| getSimilarSongs2  | no          | not planned          |
-| getTopSongs       | no          | not planned          |
-
-</details>
-
-<details>
-  <summary>Album/song lists</summary>
-
-| endpoint        | implemented | notes                              |
-|-----------------|-------------|------------------------------------|
-| getAlbumList    | partial     | frequent list type not implemented |
-| getAlbumList2   | partial     | same as getAlbumList               |
-| getRandomSongs  | no          | planned                            |
-| getSongsByGenre | no          | planned                            |
-| getNowPlaying   | no          | out of project scope               |
-| getStarred      | no          | planned                            |
-| getStarred2     | no          | planned                            |
-
-</details>
-
-<details>
-  <summary>Searching</summary>
-
-| endpoint | implemented | notes                                            |
-|----------|-------------|--------------------------------------------------|
-| search   | no          | not planned - marked as deprecated in API schema |
-| search2  | yes         |                                                  |
-| search3  | yes         |                                                  |
-
-</details>
-
-<details>
-  <summary>Playlists</summary>
-
-| endpoint       | implemented | notes                |
-|----------------|-------------|----------------------|
-| getPlaylists   | no          | out of current scope |
-| getPlaylist    | no          | out of current scope |
-| createPlaylist | no          | out of current scope |
-| updatePlaylist | no          | out of current scope |
-| deletePlaylist | no          | out of current scope |
-
-</details>
-
-<details>
-  <summary>Media retrieval</summary>
-
-| endpoint    | implemented | notes                               |
-|-------------|-------------|-------------------------------------|
-| stream      | partial     | optional parameters not implemented |
-| download    | yes         |                                     |
-| hls         | no          | not planned                         |
-| getCaptions | no          | out of project scope                |
-| getCoverArt | partial     | size parameter not implemented      |
-| getLyrics   | no          | not planned                         |
-| getAvatar   | no          | planned                             |
-
-</details>
-
-<details>
-  <summary>Media annotation</summary>
-
-| endpoint  | implemented | notes            |
-|-----------|-------------|------------------|
-| star      | no          | pending decision |
-| unstar    | no          | pending decision |
-| setRating | no          | pending decision |
-| scrobble  | no          | pending decision |
-
-</details>
-
-<details>
-  <summary>Sharing</summary>
-
-| endpoint     | implemented | notes                |
-|--------------|-------------|----------------------|
-| getShares    | no          | out of project scope |
-| createShares | no          | out of project scope |
-| updateShare  | no          | out of project scope |
-| deleteShare  | no          | out of project scope |
-
-</details>
-
-<details>
-  <summary>Podcast</summary>
-
-| endpoint               | implemented | notes                |
-|------------------------|-------------|----------------------|
-| getPodcasts            | no          | out of current scope |
-| getNewestPodcasts      | no          | out of current scope |
-| refreshPodcasts        | no          | out of current scope |
-| createPodcastChannel   | no          | out of current scope |
-| deletePodcastChannel   | no          | out of current scope |
-| deletePodcastEpisode   | no          | out of current scope |
-| downloadPodcastEpisode | no          | out of current scope |
-
-</details>
-
-<details>
-  <summary>Jukebox</summary>
-
-| endpoint       | implemented | notes                       |
-|----------------|-------------|-----------------------------|
-| jukeboxControl | no          | no such feature in Jellyfin |
-
-</details>
-
-<details>
-  <summary>System</summary>
-
-| endpoint                   | implemented | notes                       |
-|----------------------------|-------------|-----------------------------|
-| getInternetRadioStations   | no          | no such feature in Jellyfin |
-| createInternetRadioStation | no          | no such feature in Jellyfin |
-| updateInternetRadioStation | no          | no such feature in Jellyfin |
-| deleteInternetRadioStation | no          | no such feature in Jellyfin |
-
-</details>
-
-<details>
-  <summary>Chat</summary>
-
-| endpoint        | implemented | notes                       |
-|-----------------|-------------|-----------------------------|
-| getChatMessages | no          | no such feature in Jellyfin |
-| addChatMessage  | no          | no such feature in Jellyfin |
-
-</details>
-
-<details>
-  <summary>User management</summary>
-
-| endpoint       | implemented | notes                                       |
-|----------------|-------------|---------------------------------------------|
-| getUser        | partial     | folders in the response are not implemented |
-| getUsers       | no          | out of project scope                        |
-| createUser     | no          | out of project scope                        |
-| updateUser     | no          | out of project scope                        |
-| deleteUser     | no          | out of project scope                        |
-| changePassword | no          | out of project scope                        |
-
-</details>
-
-<details>
-  <summary>Bookmarks</summary>
-
-| endpoint       | implemented | notes            |
-|----------------|-------------|------------------|
-| getBookmarks   | no          | pending decision |
-| createBookmark | no          | pending decision |
-| deleteBookmark | no          | pending decision |
-| getPlayQueue   | no          | pending decision |
-| savePlayQueue  | no          | pending decision |
-
-</details>
-
-<details>
-  <summary>Media library scanning</summary>
-
-| endpoint      | implemented | notes                |
-|---------------|-------------|----------------------|
-| getScanStatus | no          | out of project scope |
-| startScan     | no          | out of project scope |
-
-</details>
-
 
 # Manual build and installation
 
@@ -283,4 +68,4 @@ Create the JellySonic directory if it does not exist, and make sure Jellyfin can
 
 # Running Jellyfin server
 
-See instructions on the [offical website](https://jellyfin.org/downloads/).
+If you don't have a Jellyfin server yet, check out the instructions on the [offical website](https://jellyfin.org/downloads/).
