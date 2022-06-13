@@ -10,14 +10,8 @@
             <div class="content-primary">
                 <form id="JellySonicConfigForm">
                     <div class="selectContainer">
-                        <label class="selectLabel" for="User">Configure JellySonic for:</label>
+                        <label class="selectLabel" for="User">Configure JellySonic for</label>
                         <select is="emby-select" id="User" name="User"></select>
-                    </div>
-                    <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="Password">Password</label>
-                        <input id="Password" name="Password" type="password" is="emby-input" min="0" />
-                        <div class="fieldDescription">Password used for Subsonic authentication.</div>
-                        <div class="fieldDescription">This password should not be the same you use to access Jellyfin server.</div>
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
@@ -32,7 +26,6 @@
                 pluginUniqueId: '076A536C-50C8-47B0-BE4C-8C8DA06C7372',
 
                 userConfigDefaults: {
-                    Password: "",
                     JellyfinUserId: "",
                     Options: {},
                 },
@@ -52,19 +45,13 @@
 
                 gatherInputValues: function () {
                     return {
-                        Password: document.querySelector("#Password").value,
                         JellyfinUserId: document.querySelector("#User").value,
                         Options: {
                         },
                     }
                 },
 
-                populateConfig: function (userData) {
-                    if (userData.Password != null) {
-                        document.querySelector("#Password")
-                            .value = userData.Password
-                    }
-                },
+                populateConfig: function (userData) {},
 
                 getUserConfig: function(config, userId) {
                     if (config.Users == null) {

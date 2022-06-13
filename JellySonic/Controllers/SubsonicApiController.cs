@@ -10,6 +10,7 @@ using JellySonic.Services;
 using JellySonic.Types;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -24,6 +25,7 @@ public class SubsonicApiController : ControllerBase
 {
     private readonly ILogger<SubsonicApiController> _logger;
     private readonly JellyfinHelper _jellyfinHelper;
+    private readonly IAuthenticationManager _authenticationManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SubsonicApiController"/> class.
@@ -31,10 +33,16 @@ public class SubsonicApiController : ControllerBase
     /// <param name="loggerFactory"> Logger factory.</param>
     /// <param name="userManager">User manager instance.</param>
     /// <param name="libraryManager">Library manager instance.</param>
-    public SubsonicApiController(ILoggerFactory loggerFactory, IUserManager userManager, ILibraryManager libraryManager)
+    /// <param name="authenticationManager">Authentication manager instance.</param>
+    public SubsonicApiController(
+        ILoggerFactory loggerFactory,
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        IAuthenticationManager authenticationManager)
     {
         _logger = loggerFactory.CreateLogger<SubsonicApiController>();
-        _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager);
+        _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager, authenticationManager);
+        _authenticationManager = authenticationManager;
     }
 
     private delegate ActionResult SubsonicAction(User user, SubsonicParams subsonicParams);
@@ -161,35 +169,45 @@ public class SubsonicApiController : ControllerBase
     /// <returns>User instance if authentication is successful. Null otherwise.</returns>
     private User? AuthenticateUser(SubsonicParams requestParams)
     {
-        var user = _jellyfinHelper.GetUserByUsername(requestParams.Username);
-
-        var jsUser = JellySonic.Instance?.Configuration.Users
-            .FirstOrDefault(u => u.JellyfinUserId == user.Id);
-
-        if (jsUser == null)
+        var username = requestParams.RetrieveUsername();
+        if (username == null)
         {
-            _logger.LogError("Failed to load user configuration");
+            _logger.LogWarning(
+                "Username {Username} is not in the correct format; " +
+                "please refer to the authentication documentation to use a correct format",
+                requestParams.Username);
             return null;
         }
 
-        if (string.IsNullOrEmpty(jsUser.Password))
+        var user = _jellyfinHelper.GetUserByUsername(username);
+        if (user == null)
         {
             _logger.LogWarning(
-                "Password is not set for user {Username}, " +
-                "please set a password in plugin settings to be able to authenticate",
+                "User {Username} not found, make sure you have the username (App name) in the correct format",
+                requestParams.RetrieveUsername());
+            return null;
+        }
+
+        var authInfos = _authenticationManager.GetApiKeys().Result;
+        var authInfo = authInfos.FirstOrDefault(k => k.AppName == requestParams.Username);
+        if (authInfo == null)
+        {
+            _logger.LogWarning(
+                "Authentication info for {Username} not found, " +
+                "make sure you have the username (App name) in the correct format",
                 requestParams.Username);
             return null;
         }
 
         if (requestParams.TokenAuthPossible())
         {
-            return requestParams.VerifyToken() ? user : null;
+            return requestParams.VerifyToken(authInfo.AccessToken) ? user : null;
         }
 
         if (!string.IsNullOrEmpty(requestParams.Password))
         {
             var password = requestParams.RetrievePassword();
-            return password == jsUser.Password ? user : null;
+            return password == authInfo.AccessToken ? user : null;
         }
 
         _logger.LogDebug("Cannot authenticate user - token/salt or password missing");

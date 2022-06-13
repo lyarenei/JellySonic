@@ -13,7 +13,6 @@ public class JellySonicUser
     public JellySonicUser()
     {
         JellyfinUserId = Guid.Empty;
-        Password = string.Empty;
         Options = new JellySonicUserOptions();
     }
 
@@ -21,13 +20,6 @@ public class JellySonicUser
     /// Gets or sets Jellyfin User ID.
     /// </summary>
     public Guid JellyfinUserId { get; set; }
-
-    /// <summary>
-    /// Gets or sets user password.
-    /// Used for Subsonic token authentication only.
-    /// This is not password for Jellyfin user.
-    /// </summary>
-    public string Password { get; set; }
 
     /// <summary>
     /// Gets or sets user options.
