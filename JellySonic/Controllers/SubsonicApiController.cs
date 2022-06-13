@@ -562,6 +562,7 @@ public class SubsonicApiController : ControllerBase
             return BuildOutput(new SubsonicResponse("failed") { ResponseData = err });
         }
 
+        // TODO load data from musicbrainz?
         IResponseData artistInfoResponseData;
         if (Request.Path.ToUriComponent().Contains("getArtistInfo2", StringComparison.InvariantCulture))
         {
