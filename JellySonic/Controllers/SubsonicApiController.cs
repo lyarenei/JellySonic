@@ -190,12 +190,7 @@ public class SubsonicApiController : ControllerBase
 
         if (!string.IsNullOrEmpty(requestParams.Password))
         {
-            var password = requestParams.Password;
-            if (password.Contains("enc:", StringComparison.InvariantCulture))
-            {
-                password = Utils.Utils.HexToAscii(password[4..]);
-            }
-
+            var password = requestParams.RetrievePassword();
             return password == jsUser.Password ? user : null;
         }
 

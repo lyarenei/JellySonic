@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -93,6 +94,20 @@ public class SubsonicParams
         }
 
         return RequiredParamsMissing() ? "one of common parameters (username, client, etc...)" : string.Empty;
+    }
+
+    /// <summary>
+    /// Get subsonic password. Password is automatically decoded if necessary.
+    /// </summary>
+    /// <returns>Subsonic user password.</returns>
+    public string RetrievePassword()
+    {
+        if (Password.Contains("enc:", StringComparison.InvariantCulture))
+        {
+            return Utils.Utils.HexToAscii(Password[4..]);
+        }
+
+        return Password;
     }
 
 #pragma warning disable CS1591
