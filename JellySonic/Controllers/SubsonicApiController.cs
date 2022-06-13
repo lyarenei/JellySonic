@@ -552,7 +552,19 @@ public class SubsonicApiController : ControllerBase
     /// <returns>A Subsonic user response.</returns>
     private ActionResult GetSubsonicUser(User user, SubsonicParams subsonicParams)
     {
-        var jellyfinUser = _jellyfinHelper.GetUserByUsername(GetRequestParams().Username);
+        var username = subsonicParams.RetrieveUsername();
+        if (username == null)
+        {
+            _logger.LogWarning(
+                "Could not determine Jellyfin username from {Username}," +
+                " please check the username format",
+                subsonicParams.Username);
+
+            var respError = new SubsonicError("user not found", ErrorCodes.Generic);
+            return BuildOutput(new SubsonicResponse { ResponseData = respError });
+        }
+
+        var jellyfinUser = _jellyfinHelper.GetUserByUsername(username);
         var userResponseData = new SubsonicUser(jellyfinUser);
         return BuildOutput(new SubsonicResponse { ResponseData = userResponseData });
     }
