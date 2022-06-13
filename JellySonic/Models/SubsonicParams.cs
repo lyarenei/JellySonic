@@ -110,6 +110,16 @@ public class SubsonicParams
         return Password;
     }
 
+    /// <summary>
+    /// Verify provided token for subsonic authentication.
+    /// </summary>
+    /// <returns>Token is valid.</returns>
+    public bool VerifyToken()
+    {
+        var computedToken = Utils.Utils.Md5Hash(Password + Salt).ToLower(CultureInfo.InvariantCulture);
+        return Token == computedToken;
+    }
+
 #pragma warning disable CS1591
 #pragma warning disable SA1201
 

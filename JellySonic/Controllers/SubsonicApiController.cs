@@ -183,9 +183,7 @@ public class SubsonicApiController : ControllerBase
 
         if (requestParams.TokenAuthPossible())
         {
-            var computedToken = Utils.Utils.Md5Hash(jsUser.Password + requestParams.Salt)
-                .ToLower(CultureInfo.InvariantCulture);
-            return computedToken == requestParams.Token ? user : null;
+            return requestParams.VerifyToken() ? user : null;
         }
 
         if (!string.IsNullOrEmpty(requestParams.Password))
