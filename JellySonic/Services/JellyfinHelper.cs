@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace JellySonic.Services;
@@ -21,6 +25,7 @@ public class JellyfinHelper
     private readonly ILogger<JellyfinHelper> _logger;
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
+    private readonly ISessionManager _sessionManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinHelper"/> class.
@@ -28,11 +33,17 @@ public class JellyfinHelper
     /// <param name="loggerFactory">Logger factory.</param>
     /// <param name="userManager">User manager.</param>
     /// <param name="libraryManager">Library manager.</param>
-    public JellyfinHelper(ILoggerFactory loggerFactory, IUserManager userManager, ILibraryManager libraryManager)
+    /// <param name="sessionManager">Session manager.</param>
+    public JellyfinHelper(
+        ILoggerFactory loggerFactory,
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        ISessionManager sessionManager)
     {
         _logger = loggerFactory.CreateLogger<JellyfinHelper>();
         _userManager = userManager;
         _libraryManager = libraryManager;
+        _sessionManager = sessionManager;
     }
 
     /// <summary>
@@ -402,5 +413,60 @@ public class JellyfinHelper
         }
 
         return _libraryManager.GetItemList(query);
+    }
+
+    /// <summary>
+    /// Scrobble item.
+    /// </summary>
+    /// <param name="user">The user to associate this scrobble with.</param>
+    /// <param name="id">Id of the item to scrobble.</param>
+    /// <param name="isSubmission">Indicates if the scrobble is a submission.</param>
+    /// <param name="authInfo">Authentication info.</param>
+    /// <returns>Scrobbles successful.</returns>
+    public async Task<bool> Scrobble(User user, string id, bool isSubmission, AuthenticationInfo authInfo)
+    {
+        var item = _libraryManager.GetItemById(id);
+        if (item == null)
+        {
+            _logger.LogWarning("could not find item with id {Id}, not scrobbling", id);
+            return false;
+        }
+
+        var session = await _sessionManager.LogSessionActivity(
+            authInfo.AppName,
+            authInfo.AppVersion,
+            authInfo.DeviceId,
+            "JellySonic",
+            string.Empty,
+            user).ConfigureAwait(true);
+
+        if (session == null)
+        {
+            _logger.LogDebug("no session available; cannot perform scrobble");
+            return false;
+        }
+
+        if (isSubmission)
+        {
+            var stopInfo = new PlaybackStopInfo
+            {
+                Failed = false,
+                ItemId = new Guid(id),
+                SessionId = session.Id,
+                PositionTicks = item.RunTimeTicks
+            };
+
+            await _sessionManager.OnPlaybackStopped(stopInfo).ConfigureAwait(true);
+            return true;
+        }
+
+        var startInfo = new PlaybackStartInfo
+        {
+            ItemId = new Guid(id),
+            SessionId = session.Id
+        };
+
+        await _sessionManager.OnPlaybackStart(startInfo).ConfigureAwait(true);
+        return true;
     }
 }

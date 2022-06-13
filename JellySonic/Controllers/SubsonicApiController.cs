@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using JellySonic.Models;
 using JellySonic.Services;
@@ -11,6 +12,7 @@ using JellySonic.Types;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -34,14 +36,16 @@ public class SubsonicApiController : ControllerBase
     /// <param name="userManager">User manager instance.</param>
     /// <param name="libraryManager">Library manager instance.</param>
     /// <param name="authenticationManager">Authentication manager instance.</param>
+    /// <param name="sessionManager">Session manager instance.</param>
     public SubsonicApiController(
         ILoggerFactory loggerFactory,
         IUserManager userManager,
         ILibraryManager libraryManager,
-        IAuthenticationManager authenticationManager)
+        IAuthenticationManager authenticationManager,
+        ISessionManager sessionManager)
     {
         _logger = loggerFactory.CreateLogger<SubsonicApiController>();
-        _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager, authenticationManager);
+        _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager, sessionManager);
         _authenticationManager = authenticationManager;
     }
 
@@ -145,6 +149,10 @@ public class SubsonicApiController : ControllerBase
             case "getArtistInfo2":
                 missingParam = requestParams.RequiredParamsMissing("id");
                 subsonicAction = GetArtistInfo;
+                break;
+            case "scrobble":
+                missingParam = requestParams.RequiredParamsMissing("id");
+                subsonicAction = Scrobble;
                 break;
             default:
                 _logger.LogDebug("method {MethodName} not found", methodName);
@@ -599,6 +607,41 @@ public class SubsonicApiController : ControllerBase
         return BuildOutput(new SubsonicResponse { ResponseData = artistInfoResponseData });
     }
 
+    /// <summary>
+    /// Get artist info.
+    /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
+    /// <returns>A Subsonic response.</returns>
+    private ActionResult Scrobble(User user, SubsonicParams subsonicParams)
+    {
+        var ids = subsonicParams.Id.Split(',');
+        var isSubmission = true;
+        if (!string.IsNullOrEmpty(subsonicParams.Submission))
+        {
+            isSubmission = Convert.ToBoolean(subsonicParams.Submission, CultureInfo.InvariantCulture);
+        }
+
+        var authInfo = GetAuthInfo().Result;
+        var ok = true;
+        foreach (var id in ids)
+        {
+            var success = _jellyfinHelper.Scrobble(user, id, isSubmission, authInfo).Result;
+            if (!success)
+            {
+                ok = false;
+            }
+        }
+
+        if (ok)
+        {
+            return BuildOutput(new SubsonicResponse());
+        }
+
+        var errData = new SubsonicError("failed to scrobble one or more items", ErrorCodes.Generic);
+        return BuildOutput(new SubsonicResponse { ResponseData = errData });
+    }
+
     private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError(User user, SubsonicParams subsonicParams)
     {
         string type = subsonicParams.Type;
@@ -734,5 +777,21 @@ public class SubsonicApiController : ControllerBase
         }
 
         return method;
+    }
+
+    private async Task<AuthenticationInfo> GetAuthInfo()
+    {
+        var subsonicParams = GetRequestParams();
+        var apiKeys = await _authenticationManager.GetApiKeys().ConfigureAwait(true);
+        var apiKey = apiKeys.FirstOrDefault(k => k.AppName == subsonicParams.Username);
+        var password = apiKey != null ? apiKey.AccessToken : subsonicParams.RetrievePassword();
+        return new AuthenticationInfo
+        {
+            AccessToken = password,
+            AppName = subsonicParams.Client,
+            AppVersion = subsonicParams.Version,
+            DeviceId = subsonicParams.Username + subsonicParams.Client,
+            DeviceName = subsonicParams.Client
+        };
     }
 }

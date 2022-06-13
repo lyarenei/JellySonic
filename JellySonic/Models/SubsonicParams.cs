@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using Microsoft.Extensions.Primitives;
 
 namespace JellySonic.Models;
@@ -47,6 +48,7 @@ public class SubsonicParams
         AlbumOffset = dataArray.FirstOrDefault(kvp => kvp.Key == "albumOffset", missing).Value;
         SongCount = dataArray.FirstOrDefault(kvp => kvp.Key == "songCount", missing).Value;
         SongOffset = dataArray.FirstOrDefault(kvp => kvp.Key == "songOffset", missing).Value;
+        Submission = dataArray.FirstOrDefault(kvp => kvp.Key == "submission", missing).Value;
     }
 
     /// <summary>
@@ -190,6 +192,8 @@ public class SubsonicParams
     public string Client { get; }
 
     public string Format { get; }
+
+    public string Submission { get; }
 
 #pragma warning restore SA1201
 #pragma warning restore CS1591
