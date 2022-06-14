@@ -422,7 +422,7 @@ public class JellyfinHelper
     /// <param name="id">Id of the item to scrobble.</param>
     /// <param name="isSubmission">Indicates if the scrobble is a submission.</param>
     /// <param name="authInfo">Authentication info.</param>
-    /// <returns>Scrobbles successful.</returns>
+    /// <returns>Scrobble successful.</returns>
     public async Task<bool> Scrobble(User user, string id, bool isSubmission, AuthenticationInfo authInfo)
     {
         var item = _libraryManager.GetItemById(id);
