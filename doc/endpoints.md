@@ -101,6 +101,8 @@ This also allows administrators to use additional plugins for submitting activit
 Unfortunately, there doesn't seem a way to set playback with custom time,
 so optional `time` parameter is ignored => scrobbles are only in current time.
 
+User rating is not available in Jellyfin and will not be implemented.
+
 | endpoint  | implemented | notes                          |
 |-----------|-------------|--------------------------------|
 | star      | yes         |                                |
