@@ -593,7 +593,7 @@ public class SubsonicApiController : ControllerBase
     }
 
     /// <summary>
-    /// Get artist info.
+    /// Scrobble a song.
     /// </summary>
     /// <param name="user">User performing the action.</param>
     /// <param name="subsonicParams">Request parameters.</param>
