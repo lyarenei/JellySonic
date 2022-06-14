@@ -114,10 +114,11 @@ public class SubsonicParams
     /// <summary>
     /// Verify provided token for subsonic authentication.
     /// </summary>
+    /// <param name="password">User password.</param>
     /// <returns>Token is valid.</returns>
-    public bool VerifyToken()
+    public bool VerifyToken(string password)
     {
-        var computedToken = Utils.Utils.Md5Hash(Password + Salt).ToLower(CultureInfo.InvariantCulture);
+        var computedToken = Utils.Utils.Md5Hash(password + Salt).ToLower(CultureInfo.InvariantCulture);
         return Token == computedToken;
     }
 

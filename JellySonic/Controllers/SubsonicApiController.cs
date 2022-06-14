@@ -194,7 +194,7 @@ public class SubsonicApiController : ControllerBase
 
         if (requestParams.TokenAuthPossible())
         {
-            return requestParams.VerifyToken() ? user : null;
+            return requestParams.VerifyToken(jsUser.Password) ? user : null;
         }
 
         if (!string.IsNullOrEmpty(requestParams.Password))
