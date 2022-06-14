@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Jellyfin.Data.Entities;
 using Microsoft.Extensions.Primitives;
 
 namespace JellySonic.Models;
@@ -115,27 +114,11 @@ public class SubsonicParams
     /// <summary>
     /// Verify provided token for subsonic authentication.
     /// </summary>
-    /// <param name="apiToken">Jellyfin API token.</param>
     /// <returns>Token is valid.</returns>
-    public bool VerifyToken(string apiToken)
+    public bool VerifyToken()
     {
-        var computedToken = Utils.Utils.Md5Hash(apiToken + Salt).ToLower(CultureInfo.InvariantCulture);
+        var computedToken = Utils.Utils.Md5Hash(Password + Salt).ToLower(CultureInfo.InvariantCulture);
         return Token == computedToken;
-    }
-
-    /// <summary>
-    /// Retrieve username for getting <see cref="User"/> instance.
-    /// Assumes username is delimited by '-' as described in documentation.
-    /// </summary>
-    /// <returns>Username. Null if invalid.</returns>
-    public string? RetrieveUsername()
-    {
-        if (Username.Contains('-', StringComparison.InvariantCulture))
-        {
-            return Username.Split('-', 2)[0];
-        }
-
-        return null;
     }
 
 #pragma warning disable CS1591

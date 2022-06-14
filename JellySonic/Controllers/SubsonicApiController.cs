@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using JellySonic.Models;
 using JellySonic.Services;
@@ -27,7 +26,6 @@ public class SubsonicApiController : ControllerBase
 {
     private readonly ILogger<SubsonicApiController> _logger;
     private readonly JellyfinHelper _jellyfinHelper;
-    private readonly IAuthenticationManager _authenticationManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SubsonicApiController"/> class.
@@ -35,18 +33,15 @@ public class SubsonicApiController : ControllerBase
     /// <param name="loggerFactory"> Logger factory.</param>
     /// <param name="userManager">User manager instance.</param>
     /// <param name="libraryManager">Library manager instance.</param>
-    /// <param name="authenticationManager">Authentication manager instance.</param>
     /// <param name="sessionManager">Session manager instance.</param>
     public SubsonicApiController(
         ILoggerFactory loggerFactory,
         IUserManager userManager,
         ILibraryManager libraryManager,
-        IAuthenticationManager authenticationManager,
         ISessionManager sessionManager)
     {
         _logger = loggerFactory.CreateLogger<SubsonicApiController>();
         _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager, sessionManager);
-        _authenticationManager = authenticationManager;
     }
 
     private delegate ActionResult SubsonicAction(User user, SubsonicParams subsonicParams);
@@ -177,45 +172,35 @@ public class SubsonicApiController : ControllerBase
     /// <returns>User instance if authentication is successful. Null otherwise.</returns>
     private User? AuthenticateUser(SubsonicParams requestParams)
     {
-        var username = requestParams.RetrieveUsername();
-        if (username == null)
+        var user = _jellyfinHelper.GetUserByUsername(requestParams.Username);
+
+        var jsUser = JellySonic.Instance?.Configuration.Users
+            .FirstOrDefault(u => u.JellyfinUserId == user.Id);
+
+        if (jsUser == null)
         {
-            _logger.LogWarning(
-                "Username {Username} is not in the correct format; " +
-                "please refer to the authentication documentation to use a correct format",
-                requestParams.Username);
+            _logger.LogError("Failed to load user configuration");
             return null;
         }
 
-        var user = _jellyfinHelper.GetUserByUsername(username);
-        if (user == null)
+        if (string.IsNullOrEmpty(jsUser.Password))
         {
             _logger.LogWarning(
-                "User {Username} not found, make sure you have the username (App name) in the correct format",
-                requestParams.RetrieveUsername());
-            return null;
-        }
-
-        var authInfos = _authenticationManager.GetApiKeys().Result;
-        var authInfo = authInfos.FirstOrDefault(k => k.AppName == requestParams.Username);
-        if (authInfo == null)
-        {
-            _logger.LogWarning(
-                "Authentication info for {Username} not found, " +
-                "make sure you have the username (App name) in the correct format",
+                "Password is not set for user {Username}, " +
+                "please set a password in plugin settings to be able to authenticate",
                 requestParams.Username);
             return null;
         }
 
         if (requestParams.TokenAuthPossible())
         {
-            return requestParams.VerifyToken(authInfo.AccessToken) ? user : null;
+            return requestParams.VerifyToken() ? user : null;
         }
 
         if (!string.IsNullOrEmpty(requestParams.Password))
         {
             var password = requestParams.RetrievePassword();
-            return password == authInfo.AccessToken ? user : null;
+            return password == jsUser.Password ? user : null;
         }
 
         _logger.LogDebug("Cannot authenticate user - token/salt or password missing");
@@ -560,7 +545,7 @@ public class SubsonicApiController : ControllerBase
     /// <returns>A Subsonic user response.</returns>
     private ActionResult GetSubsonicUser(User user, SubsonicParams subsonicParams)
     {
-        var username = subsonicParams.RetrieveUsername();
+        var username = subsonicParams.Username;
         if (username == null)
         {
             _logger.LogWarning(
@@ -622,11 +607,10 @@ public class SubsonicApiController : ControllerBase
             isSubmission = Convert.ToBoolean(subsonicParams.Submission, CultureInfo.InvariantCulture);
         }
 
-        var authInfo = GetAuthInfo().Result;
         var ok = true;
         foreach (var id in ids)
         {
-            var success = _jellyfinHelper.Scrobble(user, id, isSubmission, authInfo).Result;
+            var success = _jellyfinHelper.Scrobble(user, id, isSubmission, GetAuthInfo()).Result;
             if (!success)
             {
                 ok = false;
@@ -779,15 +763,12 @@ public class SubsonicApiController : ControllerBase
         return method;
     }
 
-    private async Task<AuthenticationInfo> GetAuthInfo()
+    private AuthenticationInfo GetAuthInfo()
     {
         var subsonicParams = GetRequestParams();
-        var apiKeys = await _authenticationManager.GetApiKeys().ConfigureAwait(true);
-        var apiKey = apiKeys.FirstOrDefault(k => k.AppName == subsonicParams.Username);
-        var password = apiKey != null ? apiKey.AccessToken : subsonicParams.RetrievePassword();
         return new AuthenticationInfo
         {
-            AccessToken = password,
+            AccessToken = string.Empty,
             AppName = subsonicParams.Client,
             AppVersion = subsonicParams.Version,
             DeviceId = subsonicParams.Username + subsonicParams.Client,

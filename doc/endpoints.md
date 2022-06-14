@@ -98,7 +98,7 @@ Jellyfin does not store lyrics, this endpoint won't be implemented.
 
 Scrobbling uses Jellyfin's internal `OnPlaybackStarted/Stopped` API, which correctly displays activity on admin dashboard.
 This also allows administrators to use additional plugins for submitting activity to external services.
-Unfortunately, there doesn't seem a way to set playback with custom time, 
+Unfortunately, there doesn't seem a way to set playback with custom time,
 so optional `time` parameter is ignored => scrobbles are only in current time.
 
 | endpoint  | implemented | notes                          |
