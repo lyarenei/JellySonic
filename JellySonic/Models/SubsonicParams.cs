@@ -48,6 +48,8 @@ public class SubsonicParams
         SongCount = dataArray.FirstOrDefault(kvp => kvp.Key == "songCount", missing).Value;
         SongOffset = dataArray.FirstOrDefault(kvp => kvp.Key == "songOffset", missing).Value;
         Submission = dataArray.FirstOrDefault(kvp => kvp.Key == "submission", missing).Value;
+        AlbumId = dataArray.FirstOrDefault(kvp => kvp.Key == "albumId", missing).Value;
+        ArtistId = dataArray.FirstOrDefault(kvp => kvp.Key == "artistId", missing).Value;
     }
 
     /// <summary>
@@ -178,6 +180,10 @@ public class SubsonicParams
     public string Format { get; }
 
     public string Submission { get; }
+
+    public string AlbumId { get; }
+
+    public string ArtistId { get; }
 
 #pragma warning restore SA1201
 #pragma warning restore CS1591

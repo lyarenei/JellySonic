@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -11,6 +12,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -26,6 +28,7 @@ public class JellyfinHelper
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
     private readonly ISessionManager _sessionManager;
+    private readonly IUserDataManager _userDataManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinHelper"/> class.
@@ -34,16 +37,19 @@ public class JellyfinHelper
     /// <param name="userManager">User manager.</param>
     /// <param name="libraryManager">Library manager.</param>
     /// <param name="sessionManager">Session manager.</param>
+    /// <param name="userDataManager">User data manager.</param>
     public JellyfinHelper(
         ILoggerFactory loggerFactory,
         IUserManager userManager,
         ILibraryManager libraryManager,
-        ISessionManager sessionManager)
+        ISessionManager sessionManager,
+        IUserDataManager userDataManager)
     {
         _logger = loggerFactory.CreateLogger<JellyfinHelper>();
         _userManager = userManager;
         _libraryManager = libraryManager;
         _sessionManager = sessionManager;
+        _userDataManager = userDataManager;
     }
 
     /// <summary>
@@ -467,6 +473,28 @@ public class JellyfinHelper
         };
 
         await _sessionManager.OnPlaybackStart(startInfo).ConfigureAwait(true);
+        return true;
+    }
+
+    /// <summary>
+    /// Set item favorite flag for a given user.
+    /// </summary>
+    /// <param name="user">Set favorite for this user.</param>
+    /// <param name="id">Target item.</param>
+    /// <param name="isFavorite">If item is favorite or not.</param>
+    /// <returns>Operation successful.</returns>
+    public bool SetFavorite(User user, string id, bool isFavorite)
+    {
+        var item = _libraryManager.GetItemById(new Guid(id));
+        if (item == null)
+        {
+            _logger.LogInformation("no item found for id {Id}, cannot set favorite", id);
+            return false;
+        }
+
+        var itemData = _userDataManager.GetUserData(user, item);
+        itemData.IsFavorite = isFavorite;
+        _userDataManager.SaveUserData(user.Id, item, itemData, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
         return true;
     }
 }

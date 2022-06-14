@@ -103,8 +103,8 @@ so optional `time` parameter is ignored => scrobbles are only in current time.
 
 | endpoint  | implemented | notes                          |
 |-----------|-------------|--------------------------------|
-| star      | no          |                                |
-| unstar    | no          |                                |
+| star      | yes         |                                |
+| unstar    | yes         |                                |
 | setRating | no          |                                |
 | scrobble  | partial     | time parameter not implemented |
 

@@ -34,14 +34,16 @@ public class SubsonicApiController : ControllerBase
     /// <param name="userManager">User manager instance.</param>
     /// <param name="libraryManager">Library manager instance.</param>
     /// <param name="sessionManager">Session manager instance.</param>
+    /// <param name="userDataManager">User data manager instance.</param>
     public SubsonicApiController(
         ILoggerFactory loggerFactory,
         IUserManager userManager,
         ILibraryManager libraryManager,
-        ISessionManager sessionManager)
+        ISessionManager sessionManager,
+        IUserDataManager userDataManager)
     {
         _logger = loggerFactory.CreateLogger<SubsonicApiController>();
-        _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager, sessionManager);
+        _jellyfinHelper = new JellyfinHelper(loggerFactory, userManager, libraryManager, sessionManager, userDataManager);
     }
 
     private delegate ActionResult SubsonicAction(User user, SubsonicParams subsonicParams);
@@ -148,6 +150,14 @@ public class SubsonicApiController : ControllerBase
             case "scrobble":
                 missingParam = requestParams.RequiredParamsMissing("id");
                 subsonicAction = Scrobble;
+                break;
+            case "star":
+                missingParam = string.Empty;
+                subsonicAction = Star;
+                break;
+            case "unstar":
+                missingParam = string.Empty;
+                subsonicAction = Unstar;
                 break;
             default:
                 _logger.LogDebug("method {MethodName} not found", methodName);
@@ -624,6 +634,58 @@ public class SubsonicApiController : ControllerBase
 
         var errData = new SubsonicError("failed to scrobble one or more items", ErrorCodes.Generic);
         return BuildOutput(new SubsonicResponse { ResponseData = errData });
+    }
+
+    /// <summary>
+    /// Star (favorite) a song, album or artist.
+    /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
+    /// <returns>A subsonic response.</returns>
+    private ActionResult Star(User user, SubsonicParams subsonicParams)
+    {
+        if (SetFavorite(user, subsonicParams, true))
+        {
+            return BuildOutput(new SubsonicResponse());
+        }
+
+        var responseData = new SubsonicError("failed to star one or more ids", ErrorCodes.Generic);
+        return BuildOutput(new SubsonicResponse { ResponseData = responseData });
+    }
+
+    /// <summary>
+    /// Unstar (favorite) a song, album or artist.
+    /// </summary>
+    /// <param name="user">User performing the action.</param>
+    /// <param name="subsonicParams">Request parameters.</param>
+    /// <returns>A subsonic response.</returns>
+    private ActionResult Unstar(User user, SubsonicParams subsonicParams)
+    {
+        if (SetFavorite(user, subsonicParams, false))
+        {
+            return BuildOutput(new SubsonicResponse());
+        }
+
+        var responseData = new SubsonicError("failed to unstar one or more ids", ErrorCodes.Generic);
+        return BuildOutput(new SubsonicResponse { ResponseData = responseData });
+    }
+
+    private bool SetFavorite(User user, SubsonicParams subsonicParams, bool isFavorite)
+    {
+        var success = true;
+        var ids = subsonicParams.Id.Split(',').ToList();
+        ids.AddRange(subsonicParams.AlbumId.Split(','));
+        ids.AddRange(subsonicParams.ArtistId.Split(','));
+        foreach (var id in ids)
+        {
+            var ok = _jellyfinHelper.SetFavorite(user, id, isFavorite);
+            if (!ok)
+            {
+                success = false;
+            }
+        }
+
+        return success;
     }
 
     private (IEnumerable<BaseItem>? Albums, ActionResult? Error) GetAlbumsOrError(User user, SubsonicParams subsonicParams)
