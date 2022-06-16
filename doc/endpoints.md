@@ -17,29 +17,27 @@ The primary aim of this plugin is to serve the subsonic clients for _music_ play
 
 ### Browsing
 
-Videos are not supported by this plugin.
-
 Top and similar songs are not likely to be implemented.
 
-| endpoint          | implemented | notes              |
-|-------------------|-------------|--------------------|
-| getMusicFolders   | yes         |                    |
-| getIndexes        | yes         |                    |
-| getMusicDirectory | yes         |                    |
-| getGenres         | yes         |                    |
-| getArtists        | yes         |                    |
-| getArtist         | yes         |                    |
-| getAlbum          | yes         |                    |
-| getSong           | yes         |                    |
-| getVideos         | no          |                    |
-| getVideoInfo      | no          |                    |
-| getArtistInfo     | partial     | returns empty data |
-| getArtistInfo2    | partial     | returns empty data |
-| getAlbumInfo      | no          |                    |
-| getAlbumInfo2     | no          |                    |
-| getSimilarSongs   | no          |                    |
-| getSimilarSongs2  | no          |                    |
-| getTopSongs       | no          |                    |
+| endpoint          | implemented | notes                          |
+|-------------------|-------------|--------------------------------|
+| getMusicFolders   | yes         |                                |
+| getIndexes        | yes         |                                |
+| getMusicDirectory | yes         |                                |
+| getGenres         | yes         |                                |
+| getArtists        | yes         |                                |
+| getArtist         | yes         |                                |
+| getAlbum          | yes         |                                |
+| getSong           | yes         |                                |
+| getVideos         | no          | video content is not supported |
+| getVideoInfo      | no          | video content is not supported |
+| getArtistInfo     | partial     | returns empty data             |
+| getArtistInfo2    | partial     | returns empty data             |
+| getAlbumInfo      | no          |                                |
+| getAlbumInfo2     | no          |                                |
+| getSimilarSongs   | no          |                                |
+| getSimilarSongs2  | no          |                                |
+| getTopSongs       | no          |                                |
 
 ### Album/song lists
 
@@ -57,13 +55,13 @@ Now playing is not likely to be implemented.
 
 ### Searching
 
-Search (1) should not be implemented as is marked as deprecated in API schema.
+Search (1) should not be implemented as it is marked as deprecated in API schema.
 
-| endpoint | implemented | notes |
-|----------|-------------|-------|
-| search   | no          |       |
-| search2  | yes         |       |
-| search3  | yes         |       |
+| endpoint | implemented | notes                |
+|----------|-------------|----------------------|
+| search   | no          | marked as deprecated |
+| search2  | yes         |                      |
+| search3  | yes         |                      |
 
 ### Playlists
 
@@ -80,34 +78,29 @@ Search (1) should not be implemented as is marked as deprecated in API schema.
 Transcoding is not supported - at least for now. There does not seem to be a way to start transcode job from within a
 plugin.
 
-Captions are only for video content, which is not supported by this plugin.
-
-Jellyfin does not store lyrics, this endpoint won't be implemented.
-
 | endpoint    | implemented | notes                               |
 |-------------|-------------|-------------------------------------|
 | stream      | partial     | optional parameters not implemented |
 | download    | yes         |                                     |
 | hls         | no          |                                     |
-| getCaptions | no          |                                     |
+| getCaptions | no          | video content is not supported      |
 | getCoverArt | partial     | size parameter not implemented      |
-| getLyrics   | no          |                                     |
+| getLyrics   | no          | not available in Jellyfin           |
 | getAvatar   | no          |                                     |
 
 ### Media annotation
 
 Scrobbling uses Jellyfin's internal `OnPlaybackStarted/Stopped` API, which correctly displays activity on admin dashboard.
 This also allows administrators to use additional plugins for submitting activity to external services.
+
 Unfortunately, there doesn't seem a way to set playback with custom time,
 so optional `time` parameter is ignored => scrobbles are only in current time.
-
-User rating is not available in Jellyfin and will not be implemented.
 
 | endpoint  | implemented | notes                          |
 |-----------|-------------|--------------------------------|
 | star      | yes         |                                |
 | unstar    | yes         |                                |
-| setRating | no          |                                |
+| setRating | no          | not available in Jellyfin      |
 | scrobble  | partial     | time parameter not implemented |
 
 ### Sharing
@@ -139,29 +132,29 @@ May be implemented in the future.
 
 No such feature in Jellyfin.
 
-| endpoint       | implemented | notes |
-|----------------|-------------|-------|
-| jukeboxControl | no          |       |
+| endpoint       | implemented | notes                     |
+|----------------|-------------|---------------------------|
+| jukeboxControl | no          | not available in Jellyfin |
 
 ### System
 
 No such feature in Jellyfin.
 
-| endpoint                   | implemented | notes |
-|----------------------------|-------------|-------|
-| getInternetRadioStations   | no          |       |
-| createInternetRadioStation | no          |       |
-| updateInternetRadioStation | no          |       |
-| deleteInternetRadioStation | no          |       |
+| endpoint                   | implemented | notes                     |
+|----------------------------|-------------|---------------------------|
+| getInternetRadioStations   | no          | not available in Jellyfin |
+| createInternetRadioStation | no          | not available in Jellyfin |
+| updateInternetRadioStation | no          | not available in Jellyfin |
+| deleteInternetRadioStation | no          | not available in Jellyfin |
 
 ### Chat
 
 No such feature in Jellyfin.
 
-| endpoint        | implemented | notes |
-|-----------------|-------------|-------|
-| getChatMessages | no          |       |
-| addChatMessage  | no          |       |
+| endpoint        | implemented | notes                     |
+|-----------------|-------------|---------------------------|
+| getChatMessages | no          | not available in Jellyfin |
+| addChatMessage  | no          | not available in Jellyfin |
 
 ### User management
 
