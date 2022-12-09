@@ -20,20 +20,6 @@ so they can authenticate with the server. This password must be stored in plaint
 To configure the user, refer to [config](#configuration) section below.
 Although there are no password requirements enforced, the password should not be the same as the Jellyfin user password.
 
-## Installation
-
-The plugin can be installed either via repository or [manually](#manual-build-and-installation).
-
-After installation, do not forget to **configure** the plugin as mentioned in the note above.
-
-### Repo Install
-
-- Repo name: JellySonic (or whatever, can be anything)
-- Repo URL: `https://raw.githubusercontent.com/lyarenei/JellySonic/master/manifest.json`
-
-After you add the repository, you should be able to see a JellySonic plugin in the catalog.
-Install your preferred version and restart the server as asked.
-
 ### Configuration
 
 To configure a user:
