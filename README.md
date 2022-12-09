@@ -1,3 +1,7 @@
+# NOTICE
+Please note the archival status of this repository. This plugin is/will not be maintained as I have lost all motivation to develop this further.
+As of writing this, the plugin is compatible with JF 10.8. However, functionality will vary depending on your subsonic client.
+
 # JellySonic
 An **experimental** subsonic plugin for Jellyfin.
 
